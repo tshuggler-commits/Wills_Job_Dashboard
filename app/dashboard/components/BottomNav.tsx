@@ -1,6 +1,6 @@
 "use client";
 
-export type Screen = "today" | "review" | "pipeline";
+export type Screen = "today" | "review" | "pipeline" | "ask";
 
 interface BottomNavProps {
   active: Screen;
@@ -34,6 +34,14 @@ function LayersIcon({ active }: { active: boolean }) {
       <polygon points="12 2 2 7 12 12 22 7 12 2" />
       <polyline points="2 17 12 22 22 17" />
       <polyline points="2 12 12 17 22 12" />
+    </svg>
+  );
+}
+
+function ChatIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#1a4b58" : "#8a8580"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
     </svg>
   );
 }
@@ -75,6 +83,7 @@ export default function BottomNav({
     { id: "review", label: "Review", icon: <InboxIcon active={active === "review"} />, badge: unreadCount },
     { id: "add", label: "Add", icon: <PlusIcon /> },
     { id: "pipeline", label: "Pipeline", icon: <LayersIcon active={active === "pipeline"} />, badge: pursuingCount },
+    { id: "ask", label: "Ask", icon: <ChatIcon active={active === "ask"} /> },
   ];
 
   return (

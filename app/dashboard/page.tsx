@@ -8,6 +8,7 @@ import BottomNav, { Screen } from "./components/BottomNav";
 import TodayView from "./components/TodayView";
 import JobCard from "./components/JobCard";
 import PipelineView from "./components/PipelineView";
+import AskView from "./components/AskView";
 import AddJobOverlay from "./components/AddJobOverlay";
 import Toast from "./components/Toast";
 
@@ -328,13 +329,13 @@ export default function DashboardPage() {
           <img
             src="/icons/icon-192x192.png"
             alt=""
-            className="w-20 h-20 rounded-2xl mb-5 pulse-gentle"
+            className="w-24 h-24 rounded-2xl mb-6 compass-rotate"
           />
-          <p className="text-white text-2xl font-bold text-center tracking-tight">
+          <p className="heading-serif text-white text-[28px] text-center">
             Career Compass
           </p>
-          <div className="loading-bar mt-6 mb-6" />
-          <p className="text-white/70 text-sm italic max-w-[280px] text-center leading-relaxed">
+          <div className="loading-bar mt-7 mb-7" />
+          <p className="text-white/60 text-[14px] italic max-w-[260px] text-center leading-relaxed">
             &ldquo;{quote}&rdquo;
           </p>
         </div>
@@ -366,7 +367,7 @@ export default function DashboardPage() {
       {/* Review header */}
       {screen === "review" && (
         <div className="pt-5 pb-4 flex items-center justify-between">
-          <h1 className="text-[22px] font-bold text-text-primary tracking-tight">Review</h1>
+          <h1 className="heading-serif text-[24px] text-text-primary">Review</h1>
           <span className="text-xs font-semibold text-text-tertiary bg-surface-alt px-2.5 py-1 rounded-full">
             {reviewJobs.length} {reviewJobs.length === 1 ? "job" : "jobs"}
           </span>
@@ -376,7 +377,7 @@ export default function DashboardPage() {
       {/* Pipeline header */}
       {screen === "pipeline" && (
         <div className="pt-5 pb-4 flex items-center justify-between">
-          <h1 className="text-[22px] font-bold text-text-primary tracking-tight">Pipeline</h1>
+          <h1 className="heading-serif text-[24px] text-text-primary">Pipeline</h1>
           <button
             onClick={() => signOut()}
             className="text-xs text-text-tertiary font-medium bg-transparent border-none cursor-pointer"
@@ -412,18 +413,26 @@ export default function DashboardPage() {
               </p>
             </div>
           ) : (
-            reviewJobs.map((j) => (
-              <JobCard
+            reviewJobs.map((j, i) => (
+              <div
                 key={j.id}
-                job={j}
-                onBookmark={handleBookmark}
-                onDismiss={handleDismiss}
-                onSaveNote={handleSaveNote}
-              />
+                className="card-enter"
+                style={{ animationDelay: `${Math.min(i * 60, 300)}ms` }}
+              >
+                <JobCard
+                  job={j}
+                  onBookmark={handleBookmark}
+                  onDismiss={handleDismiss}
+                  onSaveNote={handleSaveNote}
+                />
+              </div>
             ))
           )}
         </>
       )}
+
+      {/* Ask Screen */}
+      {screen === "ask" && <AskView jobs={jobs} />}
 
       {/* Pipeline Screen */}
       {screen === "pipeline" && (
