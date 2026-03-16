@@ -193,13 +193,145 @@ function SendIcon() {
   );
 }
 
+// ── Multi-conversation localStorage ──
+
+const CONVERSATIONS_KEY = "career-compass-conversations";
+const MAX_CONVERSATIONS = 50;
+
+interface Conversation {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+function loadConversations(): Conversation[] {
+  try {
+    const raw = localStorage.getItem(CONVERSATIONS_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function saveConversations(convos: Conversation[]) {
+  try {
+    const trimmed = convos.slice(0, MAX_CONVERSATIONS);
+    localStorage.setItem(CONVERSATIONS_KEY, JSON.stringify(trimmed));
+  } catch {
+    // storage full — silently ignore
+  }
+}
+
+function generateTitle(messages: ChatMessage[]): string {
+  const first = messages.find((m) => m.role === "user");
+  if (!first) return "New conversation";
+  const text = first.content.trim();
+  return text.length > 50 ? text.slice(0, 50) + "\u2026" : text;
+}
+
+function formatConvoDate(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay === 1) return "Yesterday";
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 export default function AskView({ jobs }: AskViewProps) {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Load conversations on mount
+  useEffect(() => {
+    const convos = loadConversations();
+    setConversations(convos);
+    // Resume the most recent conversation if it exists
+    if (convos.length > 0) {
+      setActiveId(convos[0].id);
+      setMessages(convos[0].messages);
+    }
+    setLoaded(true);
+  }, []);
+
+  // Persist active conversation whenever messages change
+  useEffect(() => {
+    if (!loaded || !activeId) return;
+    setConversations((prev) => {
+      const updated = prev.map((c) =>
+        c.id === activeId
+          ? {
+              ...c,
+              messages,
+              title: generateTitle(messages),
+              updatedAt: new Date().toISOString(),
+            }
+          : c
+      );
+      saveConversations(updated);
+      return updated;
+    });
+  }, [messages, activeId, loaded]);
+
+  function startNewChat() {
+    if (abortRef.current) abortRef.current.abort();
+    const id = Date.now().toString();
+    const newConvo: Conversation = {
+      id,
+      title: "New conversation",
+      messages: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setConversations((prev) => {
+      const updated = [newConvo, ...prev];
+      saveConversations(updated);
+      return updated;
+    });
+    setActiveId(id);
+    setMessages([]);
+    setStreaming(false);
+    setShowHistory(false);
+  }
+
+  function openConversation(id: string) {
+    const convo = conversations.find((c) => c.id === id);
+    if (!convo) return;
+    if (abortRef.current) abortRef.current.abort();
+    setActiveId(id);
+    setMessages(convo.messages);
+    setStreaming(false);
+    setShowHistory(false);
+  }
+
+  function deleteConversation(id: string) {
+    setConversations((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      saveConversations(updated);
+      return updated;
+    });
+    if (activeId === id) {
+      setActiveId(null);
+      setMessages([]);
+    }
+  }
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -224,6 +356,24 @@ export default function AskView({ jobs }: AskViewProps) {
     const content = (text || input).trim();
     if (!content || streaming) return;
 
+    // Auto-create a conversation if none active
+    if (!activeId) {
+      const id = Date.now().toString();
+      const newConvo: Conversation = {
+        id,
+        title: "New conversation",
+        messages: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setConversations((prev) => {
+        const updated = [newConvo, ...prev];
+        saveConversations(updated);
+        return updated;
+      });
+      setActiveId(id);
+    }
+
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
@@ -234,6 +384,7 @@ export default function AskView({ jobs }: AskViewProps) {
     setMessages(newMessages);
     setInput("");
     setStreaming(true);
+    setShowHistory(false);
 
     const assistantId = (Date.now() + 1).toString();
     setMessages((prev) => [
@@ -330,21 +481,89 @@ export default function AskView({ jobs }: AskViewProps) {
     <div className="flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
       {/* Header */}
       <div className="pt-5 pb-4 flex items-center justify-between flex-shrink-0">
-        <h1 className="heading-serif text-[24px] text-text-primary">Ask</h1>
-        {messages.length > 0 && (
-          <button
-            onClick={() => {
-              if (abortRef.current) abortRef.current.abort();
-              setMessages([]);
-              setStreaming(false);
-            }}
-            className="text-xs text-text-tertiary font-medium bg-transparent border-none cursor-pointer"
-          >
-            New chat
-          </button>
-        )}
+        <h1 className="heading-serif text-[24px] text-text-primary">
+          {showHistory ? "History" : "Ask"}
+        </h1>
+        <div className="flex items-center gap-3">
+          {conversations.length > 0 && !showHistory && (
+            <button
+              onClick={() => setShowHistory(true)}
+              className="text-xs text-text-tertiary font-medium bg-transparent border-none cursor-pointer"
+            >
+              History
+            </button>
+          )}
+          {showHistory && (
+            <button
+              onClick={() => setShowHistory(false)}
+              className="text-xs text-text-tertiary font-medium bg-transparent border-none cursor-pointer"
+            >
+              Back
+            </button>
+          )}
+          {!showHistory && (
+            <button
+              onClick={startNewChat}
+              className="text-xs text-teal font-semibold bg-transparent border-none cursor-pointer"
+            >
+              New chat
+            </button>
+          )}
+        </div>
       </div>
 
+      {/* History view */}
+      {showHistory ? (
+        <div className="flex-1 overflow-y-auto pb-4 min-h-0">
+          {conversations.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <ChatIcon />
+              </div>
+              <p className="text-sm text-text-secondary font-medium">
+                No conversations yet
+              </p>
+              <p className="text-xs text-text-tertiary mt-1">
+                Start a chat to see your history here.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {conversations.map((convo) => (
+                <div
+                  key={convo.id}
+                  className={`bg-surface rounded-card shadow-card px-4 py-3 cursor-pointer flex items-center justify-between gap-3 ${
+                    convo.id === activeId ? "ring-1 ring-teal/30" : ""
+                  }`}
+                  onClick={() => openConversation(convo.id)}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-text-primary font-medium truncate">
+                      {convo.title}
+                    </p>
+                    <p className="text-xs text-text-tertiary mt-0.5">
+                      {convo.messages.length} {convo.messages.length === 1 ? "message" : "messages"} &middot; {formatConvoDate(convo.updatedAt)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteConversation(convo.id);
+                    }}
+                    className="text-text-tertiary bg-transparent border-none cursor-pointer p-1 flex-shrink-0"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
       {/* Messages area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto pb-4 min-h-0">
         {isEmpty ? (
@@ -437,6 +656,8 @@ export default function AskView({ jobs }: AskViewProps) {
           </button>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
