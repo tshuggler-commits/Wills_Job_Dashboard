@@ -57,7 +57,6 @@ export default function JobCard({
   const [noteSaved, setNoteSaved] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
 
-  const isNew = job.status === "New";
   const hasRedFlags = job.redFlags && job.redFlags.length > 0;
   const dLeft = daysUntil(job.applyBy);
   const showDeadline = dLeft !== null && dLeft >= 0 && dLeft <= 7 && !job.applied;
@@ -101,9 +100,6 @@ export default function JobCard({
                 <span className="font-bold text-sm text-text-primary leading-tight">
                   {job.jobTitle}
                 </span>
-                {isNew && (
-                  <span className="w-2 h-2 rounded-full bg-teal flex-shrink-0" />
-                )}
               </div>
               <div className="text-[13px] text-text-secondary mt-0.5">
                 {job.company}
@@ -137,16 +133,20 @@ export default function JobCard({
           </div>
         </div>
 
-        {/* Pass button */}
+        {/* Dismiss button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             setDismissing(!dismissing);
             setExpanded(false);
           }}
-          className="bg-transparent border-none text-text-tertiary text-xs font-semibold cursor-pointer px-1.5 py-1 flex-shrink-0 mt-0.5"
+          className="bg-transparent border-none text-text-tertiary cursor-pointer p-1.5 flex-shrink-0 mt-0.5 transition-opacity hover:opacity-70"
+          aria-label="Dismiss job"
         >
-          Pass
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <line x1="3" y1="3" x2="11" y2="11" />
+            <line x1="11" y1="3" x2="3" y2="11" />
+          </svg>
         </button>
       </div>
 

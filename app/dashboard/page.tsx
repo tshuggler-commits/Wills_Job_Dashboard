@@ -125,7 +125,8 @@ export default function DashboardPage() {
       const aNew = a.status === "New" ? 0 : 1;
       const bNew = b.status === "New" ? 0 : 1;
       return aNew - bNew;
-    });
+    })
+    .slice(0, 10);
 
   // ── Handlers ──
 
@@ -369,7 +370,7 @@ export default function DashboardPage() {
         <div className="pt-5 pb-4 flex items-center justify-between">
           <h1 className="heading-serif text-[24px] text-text-primary">Review</h1>
           <span className="text-xs font-semibold text-text-tertiary bg-surface-alt px-2.5 py-1 rounded-full">
-            {reviewJobs.length} {reviewJobs.length === 1 ? "job" : "jobs"}
+            Top {reviewJobs.length}
           </span>
         </div>
       )}
