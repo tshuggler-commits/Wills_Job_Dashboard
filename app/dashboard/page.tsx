@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Job, DismissReason } from "@/lib/types";
+import { daysSince } from "@/lib/dates";
 import BottomNav, { Screen } from "./components/BottomNav";
 import TodayView from "./components/TodayView";
 import JobCard from "./components/JobCard";
@@ -85,9 +86,17 @@ export default function DashboardPage() {
   const active = jobs.filter((j) => !j.dismissed && j.workType !== "On-site");
 
   const unreadCount = active.filter((j) => j.status === "New").length;
-  const pursuingCount = active.filter(
-    (j) => j.bookmarked && !j.applied && j.status !== "Interview"
-  ).length;
+
+  // Pipeline badge: actionable items (resumes ready for review + overdue follow-ups)
+  const pipelineActionCount =
+    active.filter(
+      (j) => j.resumeReviewStatus === "AI Draft Ready" && j.tailoredSummary
+    ).length +
+    active.filter((j) => {
+      if (j.status !== "Applied") return false;
+      const d = daysSince(j.lastFollowUpDate || j.dateApplied);
+      return d !== null && d >= 10;
+    }).length;
 
   // ── Review screen data ──
 
@@ -415,7 +424,7 @@ export default function DashboardPage() {
         onChange={setScreen}
         onAddJob={() => setShowAddJob(true)}
         unreadCount={unreadCount}
-        pursuingCount={pursuingCount}
+        pursuingCount={pipelineActionCount}
       />
 
       {/* Add Job Overlay */}
