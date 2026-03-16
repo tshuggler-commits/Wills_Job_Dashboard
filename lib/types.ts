@@ -41,11 +41,56 @@ export type NotebookLMStatus =
   | "Prep Complete"
   | null;
 
+export interface FitBreakdownItem {
+  value: string;
+  score: number;
+}
+
+export interface MatchBreakdownSkills {
+  matched: string[];
+  gaps: string[];
+  score: number;
+}
+
+export interface MatchBreakdownItem {
+  reasoning?: string;
+  level?: string;
+  requested?: string;
+  score: number;
+}
+
+export interface FitBreakdown {
+  work_arrangement?: FitBreakdownItem;
+  salary?: FitBreakdownItem;
+  company_size?: FitBreakdownItem;
+  industry?: FitBreakdownItem;
+  employment_type?: FitBreakdownItem;
+}
+
+export interface MatchBreakdown {
+  skills_overlap?: MatchBreakdownSkills;
+  experience_relevance?: MatchBreakdownItem;
+  seniority?: MatchBreakdownItem;
+  education_fit?: MatchBreakdownItem;
+  years?: MatchBreakdownItem;
+}
+
 export interface Job {
   id: string;
   jobTitle: string;
   company: string;
+  // v6 scoring: two sub-scores + total
+  fitScore: number | null;
   matchScore: number | null;
+  totalScore: number | null;
+  fitBreakdown: FitBreakdown | null;
+  matchBreakdown: MatchBreakdown | null;
+  roleSummary: string;
+  keyRequirements: string[];
+  whyMatch: string;
+  skillGaps: string[];
+  matchedSkills: string[];
+  // status & metadata
   status: JobStatus;
   workType: WorkType;
   salaryRange: string;
@@ -81,9 +126,4 @@ export interface Job {
   recruiterName: string;
   recruiterContact: string;
   internalConnection: string;
-}
-
-// Convenience derived type for the UI
-export interface ReviewJob extends Job {
-  isNew: boolean;
 }

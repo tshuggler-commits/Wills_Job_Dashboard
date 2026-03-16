@@ -49,13 +49,48 @@ function date(prop: any): string | null {
 
 // ── Map a Notion page to our Job type ──
 
+function parseJSON(raw: string): any {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function csvToArray(raw: string): string[] {
+  if (!raw) return [];
+  return raw.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
 function pageToJob(page: any): Job {
   const p = page.properties;
+
+  // Parse match breakdown to extract matched skills and skill gaps
+  const matchBD = parseJSON(text(p["Match Breakdown"]));
+  const matchedSkills = matchBD?.skills_overlap?.matched || [];
+  const skillGapsFromBreakdown = matchBD?.skills_overlap?.gaps || [];
+
+  // Skill Gaps property takes precedence, fallback to breakdown
+  const skillGapsRaw = csvToArray(text(p["Skill Gaps"]));
+  const skillGaps = skillGapsRaw.length > 0 ? skillGapsRaw : skillGapsFromBreakdown;
+
   return {
     id: page.id,
     jobTitle: text(p["Job Title"]),
     company: text(p["Company"]),
+    // v6 scoring
+    fitScore: num(p["Fit Score"]),
     matchScore: num(p["Match Score"]),
+    totalScore: num(p["Total Score"]),
+    fitBreakdown: parseJSON(text(p["Fit Breakdown"])),
+    matchBreakdown: matchBD,
+    roleSummary: text(p["Role Summary"]),
+    keyRequirements: csvToArray(text(p["Key Requirements"])),
+    whyMatch: text(p["Why Match"]),
+    skillGaps,
+    matchedSkills,
+    // status & metadata
     status: sel(p["Status"]) as any || "New",
     workType: sel(p["Work Type"]) as any || "Remote",
     salaryRange: text(p["Salary Range"]),
@@ -109,7 +144,7 @@ export async function getActiveJobs(): Promise<Job[]> {
         checkbox: { equals: false },
       },
       sorts: [
-        { property: "Match Score", direction: "descending" },
+        { property: "Total Score", direction: "descending" },
       ],
       start_cursor: cursor,
       page_size: 100,

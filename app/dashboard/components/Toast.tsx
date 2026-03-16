@@ -15,7 +15,7 @@ export default function Toast({ message, onClose, onUndo }: ToastProps) {
   }, [onClose]);
 
   return (
-    <div className="toast-enter fixed bottom-5 left-1/2 -translate-x-1/2 bg-text-primary text-white px-5 py-2.5 rounded-std text-[13px] font-medium z-[200] shadow-lg flex items-center gap-3">
+    <div className="toast-enter fixed bottom-[72px] left-1/2 -translate-x-1/2 bg-text-primary text-white px-5 py-2.5 rounded-std text-[13px] font-medium z-[200] shadow-lg flex items-center gap-3">
       <span>{message}</span>
       {onUndo && (
         <button

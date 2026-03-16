@@ -4,10 +4,7 @@ import { useState } from "react";
 import { Job } from "@/lib/types";
 import { daysUntil, daysSince, fmtDate } from "@/lib/dates";
 import ResumeReview from "./ResumeReview";
-import {
-  followUpTemplates,
-  fillTemplate,
-} from "@/lib/templates/followup-emails";
+import { followUpTemplates, fillTemplate } from "@/lib/templates/followup-emails";
 
 interface PipelineViewProps {
   jobs: Job[];

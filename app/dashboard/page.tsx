@@ -3,11 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Job, DismissReason } from "@/lib/types";
-import { daysUntil, todayFormatted, fmtDate } from "@/lib/dates";
-import Tabs from "./components/Tabs";
+import BottomNav, { Screen } from "./components/BottomNav";
+import TodayView from "./components/TodayView";
 import JobCard from "./components/JobCard";
 import PipelineView from "./components/PipelineView";
-import MondayBanner from "./components/MondayBanner";
 import AddJobOverlay from "./components/AddJobOverlay";
 import Toast from "./components/Toast";
 
@@ -57,7 +56,7 @@ export default function DashboardPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<"review" | "pipeline">("review");
+  const [screen, setScreen] = useState<Screen>("today");
   const [toast, setToast] = useState<ToastState | null>(null);
   const [showAddJob, setShowAddJob] = useState(false);
 
@@ -90,7 +89,7 @@ export default function DashboardPage() {
     (j) => j.bookmarked && !j.applied && j.status !== "Interview"
   ).length;
 
-  // ── Review tab data ──
+  // ── Review screen data ──
 
   const reviewJobs = [...active]
     .filter((j) => {
@@ -99,22 +98,13 @@ export default function DashboardPage() {
       return true;
     })
     .sort((a, b) => {
-      // Sort by score descending, unread as tiebreaker
-      const scoreDiff = (b.matchScore || 0) - (a.matchScore || 0);
+      // Sort by total score descending, unread as tiebreaker
+      const scoreDiff = (b.totalScore || 0) - (a.totalScore || 0);
       if (scoreDiff !== 0) return scoreDiff;
       const aNew = a.status === "New" ? 0 : 1;
       const bNew = b.status === "New" ? 0 : 1;
       return aNew - bNew;
     });
-
-  const attentionJobs = active.filter(
-    (j) =>
-      j.status === "Interview" ||
-      (daysUntil(j.applyBy) !== null &&
-        daysUntil(j.applyBy)! >= 0 &&
-        daysUntil(j.applyBy)! <= 3 &&
-        !j.applied)
-  );
 
   // ── Handlers ──
 
@@ -137,9 +127,8 @@ export default function DashboardPage() {
     );
 
     showToast(
-      bookmarked ? "Added to shortlist" : "Removed from shortlist",
+      bookmarked ? "Added to Pipeline, tailoring resume" : "Removed from shortlist",
       () => {
-        // Undo
         setJobs((p) =>
           p.map((j) =>
             j.id === id ? { ...j, bookmarked: prev } : j
@@ -148,10 +137,8 @@ export default function DashboardPage() {
       }
     );
 
-    // Fire API call (no undo cancellation for simplicity — undo reverts local state and re-patches)
     apiPatch(`/api/jobs/${id}/bookmark`, { bookmarked }).catch((err) => {
       console.error("Bookmark failed:", err);
-      // Revert on error
       setJobs((p) =>
         p.map((j) =>
           j.id === id ? { ...j, bookmarked: prev } : j
@@ -164,7 +151,6 @@ export default function DashboardPage() {
     const job = jobs.find((j) => j.id === id);
     if (!job) return;
 
-    // Optimistic
     setJobs((p) =>
       p.map((j) =>
         j.id === id
@@ -173,7 +159,6 @@ export default function DashboardPage() {
       )
     );
 
-    // Use a timeout so undo can cancel
     const timeout = setTimeout(() => {
       apiPatch(`/api/jobs/${id}/dismiss`, { reason }).catch((err) => {
         console.error("Dismiss failed:", err);
@@ -295,7 +280,7 @@ export default function DashboardPage() {
       const newJob = await apiPost("/api/jobs/add-job", data);
       setJobs((p) => [newJob, ...p]);
       showToast(`Added: ${data.title}`);
-      setTab("pipeline");
+      setScreen("pipeline");
     } catch (err: any) {
       console.error("Add job failed:", err);
       showToast("Failed to add job");
@@ -306,9 +291,19 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="max-w-app mx-auto px-4 pt-20 text-center">
-        <div className="spinner w-6 h-6 rounded-full border-2 border-text-tertiary border-t-transparent mx-auto mb-3" />
-        <p className="text-sm text-text-tertiary">Loading jobs...</p>
+      <div className="max-w-app mx-auto px-4 min-h-screen flex flex-col items-center justify-center">
+        <div className="fade-in">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icons/icon-192x192.png"
+            alt=""
+            className="w-16 h-16 mx-auto mb-4 rounded-2xl"
+          />
+          <p className="text-lg font-semibold text-text-primary text-center">
+            Career Compass
+          </p>
+          <div className="spinner w-5 h-5 rounded-full border-2 border-text-tertiary border-t-transparent mx-auto mt-4" />
+        </div>
       </div>
     );
   }
@@ -316,9 +311,7 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="max-w-app mx-auto px-4 pt-20 text-center">
-        <p className="text-sm text-red font-medium mb-2">
-          Something went wrong
-        </p>
+        <p className="text-sm text-red font-medium mb-2">Something went wrong</p>
         <p className="text-xs text-text-tertiary mb-4">{error}</p>
         <button
           onClick={() => window.location.reload()}
@@ -335,86 +328,49 @@ export default function DashboardPage() {
   const userName = session?.user?.name || "Will";
 
   return (
-    <div className="max-w-app mx-auto px-4 pb-[100px] bg-bg min-h-screen">
-      {/* Header */}
-      <div className="pt-5 pb-4 flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-text-primary">
-            Hey, {userName}
-          </h1>
-          <p className="text-[13px] text-text-tertiary mt-0.5">
-            {todayFormatted()}
-          </p>
+    <div className="max-w-app mx-auto px-4 pb-20 bg-bg min-h-screen">
+      {/* Sign out - top right corner */}
+      {screen === "today" && (
+        <div className="flex justify-end pt-2">
+          <button
+            onClick={() => signOut()}
+            className="text-xs text-text-tertiary bg-transparent border-none cursor-pointer"
+          >
+            Sign out
+          </button>
         </div>
-        <button
-          onClick={() => signOut()}
-          className="text-xs text-text-tertiary bg-transparent border-none cursor-pointer mt-1"
-        >
-          Sign out
-        </button>
-      </div>
+      )}
 
-      <Tabs
-        active={tab}
-        onChange={setTab}
-        unreadCount={unreadCount}
-        pursuingCount={pursuingCount}
-      />
+      {/* Review header */}
+      {screen === "review" && (
+        <div className="pt-5 pb-4 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-text-primary">Review</h1>
+          <span className="text-xs text-text-tertiary">
+            {reviewJobs.length} {reviewJobs.length === 1 ? "job" : "jobs"}
+          </span>
+        </div>
+      )}
 
-      {/* Review Tab */}
-      {tab === "review" && (
+      {/* Pipeline header */}
+      {screen === "pipeline" && (
+        <div className="pt-5 pb-4">
+          <h1 className="text-xl font-bold text-text-primary">Pipeline</h1>
+        </div>
+      )}
+
+      {/* Today Screen */}
+      {screen === "today" && (
+        <TodayView
+          jobs={jobs}
+          userName={userName}
+          onApproveResume={handleApproveResume}
+          onNavigateToReview={() => setScreen("review")}
+        />
+      )}
+
+      {/* Review Screen */}
+      {screen === "review" && (
         <>
-          <MondayBanner jobs={active} />
-
-          {attentionJobs.length > 0 && (
-            <div className="mb-4">
-              <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-2 px-0.5">
-                Needs attention
-              </div>
-              {attentionJobs.map((j) => (
-                <div
-                  key={j.id + "-attn"}
-                  className={`rounded-std p-3 mb-1.5 flex items-center justify-between ${
-                    j.status === "Interview"
-                      ? "bg-purple-light border border-purple/10"
-                      : "bg-amber-light border border-amber/15"
-                  }`}
-                >
-                  <div>
-                    <div className="text-[13px] font-semibold text-text-primary">
-                      {j.jobTitle} at {j.company}
-                    </div>
-                    <div
-                      className={`text-xs font-medium mt-0.5 ${
-                        j.status === "Interview"
-                          ? "text-purple"
-                          : "text-amber"
-                      }`}
-                    >
-                      {j.status === "Interview"
-                        ? "Interview upcoming"
-                        : `Deadline ${fmtDate(j.applyBy)}`}
-                    </div>
-                  </div>
-                  {j.status === "Interview" && (
-                    <button className="bg-purple text-white border-none px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer">
-                      Prep
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between mb-2.5 px-0.5">
-            <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide">
-              Jobs to review
-            </span>
-            <span className="text-xs text-text-tertiary">
-              {reviewJobs.length}
-            </span>
-          </div>
-
           {reviewJobs.length === 0 ? (
             <div className="p-6 text-center text-sm text-text-tertiary bg-surface-alt rounded-std border border-border">
               No new jobs to review. Check back tomorrow.
@@ -426,8 +382,6 @@ export default function DashboardPage() {
                 job={j}
                 onBookmark={handleBookmark}
                 onDismiss={handleDismiss}
-                onApply={handleApply}
-                onApproveResume={handleApproveResume}
                 onSaveNote={handleSaveNote}
               />
             ))
@@ -435,8 +389,8 @@ export default function DashboardPage() {
         </>
       )}
 
-      {/* Pipeline Tab */}
-      {tab === "pipeline" && (
+      {/* Pipeline Screen */}
+      {screen === "pipeline" && (
         <PipelineView
           jobs={active}
           onApproveResume={handleApproveResume}
@@ -444,16 +398,16 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Floating add button */}
-      {!showAddJob && (
-        <button
-          onClick={() => setShowAddJob(true)}
-          className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-text-primary text-white border-none text-2xl font-light cursor-pointer shadow-lg flex items-center justify-center z-[100] leading-none"
-        >
-          +
-        </button>
-      )}
+      {/* Bottom Navigation */}
+      <BottomNav
+        active={screen}
+        onChange={setScreen}
+        onAddJob={() => setShowAddJob(true)}
+        unreadCount={unreadCount}
+        pursuingCount={pursuingCount}
+      />
 
+      {/* Add Job Overlay */}
       {showAddJob && (
         <AddJobOverlay
           onClose={() => setShowAddJob(false)}
@@ -461,6 +415,7 @@ export default function DashboardPage() {
         />
       )}
 
+      {/* Toast */}
       {toast && (
         <Toast
           message={toast.message}

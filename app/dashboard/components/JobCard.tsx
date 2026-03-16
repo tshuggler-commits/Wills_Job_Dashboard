@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { Job, DismissReason } from "@/lib/types";
-import { daysUntil, daysSince, fmtDate } from "@/lib/dates";
-import ResumeReview from "./ResumeReview";
+import { daysUntil, fmtDate } from "@/lib/dates";
+import ScoreBadges from "./ScoreBadges";
+import RoleDetails from "./RoleDetails";
 
 const DISMISS_REASONS: DismissReason[] = [
   "Low Pay",
@@ -18,34 +19,7 @@ interface JobCardProps {
   job: Job;
   onBookmark: (id: string, bookmarked: boolean) => void;
   onDismiss: (id: string, reason: DismissReason) => void;
-  onApply: (id: string) => void;
-  onApproveResume: (id: string) => void;
   onSaveNote: (id: string, notes: string) => void;
-}
-
-function ScoreBlock({ score }: { score: number | null }) {
-  if (score === null) {
-    return (
-      <div className="w-10 h-10 rounded-std flex-shrink-0 bg-surface-alt text-text-tertiary flex items-center justify-center font-semibold text-[11px]">
-        NEW
-      </div>
-    );
-  }
-  const isHigh = score >= 8;
-  const isMid = score >= 6;
-  return (
-    <div
-      className={`w-10 h-10 rounded-std flex-shrink-0 flex items-center justify-center font-bold text-[15px] font-mono ${
-        isHigh
-          ? "bg-green-light text-green"
-          : isMid
-          ? "bg-amber-light text-amber"
-          : "bg-surface-alt text-text-tertiary"
-      }`}
-    >
-      {score}
-    </div>
-  );
 }
 
 function BookmarkIcon({ filled }: { filled: boolean }) {
@@ -57,14 +31,7 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
     );
   }
   return (
-    <svg
-      width={18}
-      height={18}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="#9a9a9a"
-      strokeWidth="1.3"
-    >
+    <svg width={18} height={18} viewBox="0 0 16 16" fill="none" stroke="#9a9a9a" strokeWidth="1.3">
       <path d="M3.5 2.5A1 1 0 014.5 1.5h7a1 1 0 011 1v11.207a.25.25 0 01-.389.208L8 11.118l-4.111 2.797A.25.25 0 013.5 13.707V2.5z" />
     </svg>
   );
@@ -72,20 +39,8 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
 
 function ExternalIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      style={{ opacity: 0.6 }}
-    >
-      <path
-        d="M2 10L10 2M10 2H4M10 2V8"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ opacity: 0.6 }}>
+      <path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -94,8 +49,6 @@ export default function JobCard({
   job,
   onBookmark,
   onDismiss,
-  onApply,
-  onApproveResume,
   onSaveNote,
 }: JobCardProps) {
   const [expanded, setExpanded] = useState(false);
@@ -108,14 +61,15 @@ export default function JobCard({
   const hasRedFlags = job.redFlags && job.redFlags.length > 0;
   const dLeft = daysUntil(job.applyBy);
   const showDeadline = dLeft !== null && dLeft >= 0 && dLeft <= 7 && !job.applied;
-  const dAgo = daysSince(job.dateApplied);
 
-  const hasContact =
-    job.recruiterName || job.recruiterContact || job.internalConnection;
+  const hasContact = job.recruiterName || job.recruiterContact || job.internalConnection;
 
-  const hasResume =
-    job.resumeReviewStatus === "AI Draft Ready" ||
-    job.resumeReviewStatus === "Approved";
+  // Truncate role summary for collapsed preview
+  const summaryPreview = job.roleSummary
+    ? job.roleSummary.length > 60
+      ? job.roleSummary.slice(0, 60) + "..."
+      : job.roleSummary
+    : "";
 
   return (
     <div className="bg-surface rounded-card mb-2 overflow-hidden border border-border">
@@ -127,7 +81,7 @@ export default function JobCard({
             e.stopPropagation();
             onBookmark(job.id, !job.bookmarked);
           }}
-          className="bg-transparent border-none cursor-pointer p-0.5 flex-shrink-0 mt-2.5"
+          className="bg-transparent border-none cursor-pointer p-0.5 flex-shrink-0 mt-1"
           style={{ opacity: job.bookmarked ? 1 : 0.4 }}
         >
           <BookmarkIcon filled={job.bookmarked} />
@@ -141,9 +95,9 @@ export default function JobCard({
           }}
           className="flex-1 cursor-pointer min-w-0"
         >
-          <div className="flex items-center gap-1.5">
-            <ScoreBlock score={job.matchScore} />
-            <div className="min-w-0">
+          <div className="flex items-start gap-2">
+            <ScoreBadges fitScore={job.fitScore} matchScore={job.matchScore} compact />
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-sm text-text-primary leading-tight">
                   {job.jobTitle}
@@ -161,23 +115,12 @@ export default function JobCard({
             </div>
           </div>
 
-          {/* Status line */}
-          <div className="flex gap-2.5 mt-1.5 ml-[50px] items-center flex-wrap">
-            {job.status === "Applied" && (
-              <span className="text-[11px] font-semibold text-blue">
-                Applied {fmtDate(job.dateApplied)}
-                {dAgo !== null && dAgo >= 10 && (
-                  <span className="text-amber">
-                    {" "}
-                    · {dAgo}d ago, follow up?
-                  </span>
-                )}
-              </span>
-            )}
-            {job.status === "Interview" && (
-              <span className="text-[11px] font-semibold text-purple">
-                Interview upcoming
-              </span>
+          {/* Role summary preview + deadline */}
+          <div className="mt-1.5 space-y-0.5">
+            {summaryPreview && (
+              <p className="text-[12px] text-text-tertiary leading-snug">
+                {summaryPreview}
+              </p>
             )}
             {showDeadline && (
               <span
@@ -195,16 +138,16 @@ export default function JobCard({
           </div>
         </div>
 
-        {/* Dismiss X */}
+        {/* Pass button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             setDismissing(!dismissing);
             setExpanded(false);
           }}
-          className="bg-transparent border-none text-text-tertiary text-sm cursor-pointer px-1 py-0.5 flex-shrink-0 mt-2.5 opacity-40"
+          className="bg-transparent border-none text-text-tertiary text-xs font-medium cursor-pointer px-1.5 py-1 flex-shrink-0 mt-1"
         >
-          ✕
+          Pass
         </button>
       </div>
 
@@ -240,28 +183,51 @@ export default function JobCard({
       {/* Expanded detail */}
       {expanded && !dismissing && (
         <div className="expand-in border-t border-border-light">
-          {/* Company Intel */}
+          {/* Section 1: Role Details */}
+          <RoleDetails
+            roleSummary={job.roleSummary}
+            keyRequirements={job.keyRequirements}
+            matchedSkills={job.matchedSkills}
+            skillGaps={job.skillGaps}
+          />
+
+          {/* Section 2: Why It's a Match */}
+          {job.whyMatch && (
+            <div className="px-4 py-3 border-t border-border-light">
+              <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-1.5">
+                Why It&apos;s a Match
+              </div>
+              <p className="text-[13px] text-text-secondary leading-relaxed">
+                {job.whyMatch}
+              </p>
+              {hasRedFlags && (
+                <p className="text-[13px] text-amber mt-1.5 font-medium">
+                  {job.redFlags.join(", ")}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Section 3: Company Intel */}
           {job.companyIntel && (
-            <div className="px-4 pt-3.5">
+            <div className="px-4 py-3 border-t border-border-light">
               <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-1.5">
                 Company Intel
               </div>
               <p className="text-[13px] text-text-secondary leading-relaxed mb-1.5">
                 {job.companyIntel}
               </p>
-              {hasRedFlags && (
+              {!job.whyMatch && hasRedFlags && (
                 <p className="text-[13px] text-red mb-1.5">
                   {job.redFlags.join(", ")}
                 </p>
               )}
-              <div className="text-xs text-text-tertiary pb-3.5">
+              <div className="text-xs text-text-tertiary">
                 {[
-                  job.companySize && `${job.companySize}`,
+                  job.companySize,
                   job.industry,
                   job.dateFound && `Found ${fmtDate(job.dateFound)}`,
-                  job.source !== "Manual"
-                    ? `via ${job.source}`
-                    : "Added manually",
+                  job.source !== "Manual" ? `via ${job.source}` : "Added manually",
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -271,7 +237,7 @@ export default function JobCard({
 
           {/* Contact info */}
           {hasContact && (
-            <div className="px-4 pb-3 border-t border-border-light pt-3">
+            <div className="px-4 py-3 border-t border-border-light">
               <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-1.5">
                 Contacts
               </div>
@@ -286,18 +252,6 @@ export default function JobCard({
                   Internal: {job.internalConnection}
                 </p>
               )}
-            </div>
-          )}
-
-          {/* Resume review */}
-          {hasResume && (
-            <div className="px-4 pb-3.5">
-              <ResumeReview
-                tailoredSummary={job.tailoredSummary}
-                skillsEmphasized={job.skillsEmphasized}
-                experienceFraming={job.experienceFraming}
-                onApprove={() => onApproveResume(job.id)}
-              />
             </div>
           )}
 
@@ -320,9 +274,7 @@ export default function JobCard({
                     setNoteSaved(true);
                   }}
                   className={`px-3 py-1 rounded-md text-xs font-medium cursor-pointer border-none ${
-                    noteSaved
-                      ? "bg-green-light text-green"
-                      : "bg-text-primary text-white"
+                    noteSaved ? "bg-green-light text-green" : "bg-text-primary text-white"
                   }`}
                 >
                   {noteSaved ? "Saved" : "Save"}
@@ -331,38 +283,36 @@ export default function JobCard({
             </div>
           )}
 
-          {/* Actions */}
+          {/* Section 4: Actions */}
           <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border-light items-center">
-            {!job.applied ? (
-              <>
-                <a
-                  href={job.applyLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-text-primary text-white px-4 py-2 rounded-std text-[13px] font-semibold no-underline inline-flex items-center gap-1.5"
-                >
-                  Apply <ExternalIcon />
-                </a>
-                <button
-                  onClick={() => onApply(job.id)}
-                  className="bg-green-light text-green border border-green/10 px-4 py-2 rounded-std text-[13px] font-semibold cursor-pointer"
-                >
-                  Mark Applied
-                </button>
-              </>
-            ) : (
-              <span className="text-[13px] text-green font-medium">
-                Applied {fmtDate(job.dateApplied)}
-              </span>
-            )}
-            {job.status === "Interview" && (
-              <button className="bg-purple-light text-purple border border-purple/10 px-4 py-2 rounded-std text-[13px] font-semibold cursor-pointer">
-                Interview Prep
-              </button>
+            <button
+              onClick={() => onBookmark(job.id, true)}
+              className="bg-text-primary text-white px-4 py-2 rounded-std text-[13px] font-semibold cursor-pointer border-none"
+            >
+              Interested
+            </button>
+            <button
+              onClick={() => {
+                setDismissing(true);
+                setExpanded(false);
+              }}
+              className="bg-surface-alt text-text-secondary border border-border px-4 py-2 rounded-std text-[13px] font-medium cursor-pointer"
+            >
+              Pass
+            </button>
+            {job.applyLink && (
+              <a
+                href={job.applyLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[13px] text-text-tertiary font-medium no-underline inline-flex items-center gap-1 ml-auto"
+              >
+                View Posting <ExternalIcon />
+              </a>
             )}
             <button
               onClick={() => setShowNotes(!showNotes)}
-              className="bg-transparent text-text-tertiary border-none px-2.5 py-2 text-[13px] font-medium cursor-pointer ml-auto"
+              className="bg-transparent text-text-tertiary border-none px-2.5 py-2 text-[13px] font-medium cursor-pointer"
             >
               {showNotes || job.notes ? "Notes" : "+ Note"}
             </button>

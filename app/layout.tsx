@@ -3,8 +3,18 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Will's Job Dashboard",
-  description: "Daily job search command center",
+  title: "Career Compass",
+  description: "Will's job search dashboard",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/favicon.ico",
+    apple: "/icons/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Career Compass",
+  },
 };
 
 export const viewport: Viewport = {
@@ -12,7 +22,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#f7f7f5",
+  themeColor: "#1a4b58",
 };
 
 export default function RootLayout({
