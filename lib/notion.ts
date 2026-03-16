@@ -145,6 +145,7 @@ export async function getActiveJobs(): Promise<Job[]> {
       },
       sorts: [
         { property: "Total Score", direction: "descending" },
+        { property: "Match Score", direction: "descending" },
       ],
       start_cursor: cursor,
       page_size: 100,

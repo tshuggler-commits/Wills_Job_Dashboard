@@ -96,7 +96,7 @@ export default function JobCard({
           className="flex-1 cursor-pointer min-w-0"
         >
           <div className="flex items-start gap-2">
-            <ScoreBadges fitScore={job.fitScore} matchScore={job.matchScore} compact />
+            <ScoreBadges fitScore={job.fitScore} matchScore={job.matchScore} totalScore={job.totalScore} compact />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-sm text-text-primary leading-tight">

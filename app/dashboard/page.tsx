@@ -98,8 +98,10 @@ export default function DashboardPage() {
       return true;
     })
     .sort((a, b) => {
-      // Sort by total score descending, unread as tiebreaker
-      const scoreDiff = (b.totalScore || 0) - (a.totalScore || 0);
+      // Sort by best available score: totalScore if present, else matchScore (old blended)
+      const aScore = a.totalScore ?? a.matchScore ?? 0;
+      const bScore = b.totalScore ?? b.matchScore ?? 0;
+      const scoreDiff = bScore - aScore;
       if (scoreDiff !== 0) return scoreDiff;
       const aNew = a.status === "New" ? 0 : 1;
       const bNew = b.status === "New" ? 0 : 1;
