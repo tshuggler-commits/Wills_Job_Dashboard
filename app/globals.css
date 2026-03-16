@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 * {
   box-sizing: border-box;
@@ -12,16 +12,30 @@
 
 body {
   background: #f5f3ef;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+/* Paper texture grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
 }
 
 /* ── Interaction polish ── */
 
+button {
+  transition: transform 0.1s ease;
+}
+
 button:active {
   transform: scale(0.97);
-  transition: transform 0.08s ease;
 }
 
 /* ── Animations ── */
@@ -40,7 +54,7 @@ button:active {
 }
 
 .toast-enter {
-  animation: slideUp 0.2s ease-out;
+  animation: slideUp 0.3s ease-out;
 }
 
 @keyframes expandIn {
@@ -49,7 +63,7 @@ button:active {
 }
 
 .expand-in {
-  animation: expandIn 0.25s ease-out;
+  animation: expandIn 0.2s ease-out;
 }
 
 @keyframes fadeIn {
@@ -58,7 +72,7 @@ button:active {
 }
 
 .fade-in {
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 @keyframes fadeInFast {
@@ -70,40 +84,55 @@ button:active {
   animation: fadeInFast 0.15s ease-out;
 }
 
+/* Staggered card entry */
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-enter {
+  animation: cardEnter 0.25s ease-out forwards;
+  opacity: 0;
+}
+
+/* Bookmark bounce */
+@keyframes bookmarkBounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.bookmark-bounce {
+  animation: bookmarkBounce 0.25s ease-out;
+}
+
 /* ── Branded loading screen ── */
 
 .loading-gradient {
-  background: linear-gradient(150deg, #1a4b58 0%, #2d6a4f 50%, #1a4b58 100%);
-  background-size: 200% 200%;
-  animation: gradientShift 6s ease infinite;
+  background: linear-gradient(150deg, #1a4b58 0%, #0f2d3a 100%);
 }
 
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+@keyframes compassSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-@keyframes pulseGentle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.04); }
+.compass-rotate {
+  animation: compassSpin 8s ease-in-out infinite;
 }
 
-.pulse-gentle {
-  animation: pulseGentle 2.5s ease-in-out infinite;
+.loading-bar {
+  width: 200px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
 }
 
 @keyframes loadingSlide {
   0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
-}
-
-.loading-bar {
-  width: 140px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
+  100% { transform: translateX(250%); }
 }
 
 .loading-bar::after {
@@ -111,20 +140,21 @@ button:active {
   position: absolute;
   top: 0;
   left: 0;
-  width: 40%;
+  width: 35%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  background: linear-gradient(90deg, transparent, #b8860b, #1a4b58, transparent);
   border-radius: 2px;
-  animation: loadingSlide 1.5s ease-in-out infinite;
+  animation: loadingSlide 1.8s ease-in-out infinite;
 }
 
 /* ── Today screen gradient header ── */
 
 .today-header {
-  background: linear-gradient(135deg, #1a4b58 0%, #2d6a4f 60%, #3a7d5c 100%);
+  background: linear-gradient(150deg, #1a4b58 0%, #0f2d3a 100%);
   border-radius: 0 0 20px 20px;
   margin: 0 -16px;
-  padding: 36px 28px 28px;
+  padding: 40px 28px 32px;
+  min-height: 160px;
   position: relative;
   overflow: hidden;
 }
@@ -132,21 +162,21 @@ button:active {
 .today-header::before {
   content: "";
   position: absolute;
-  top: -40px;
-  right: -30px;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  top: -50px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(184,134,11,0.08) 0%, transparent 70%);
   border-radius: 50%;
 }
 
 .today-header::after {
   content: "";
   position: absolute;
-  bottom: -20px;
-  left: -20px;
-  width: 80px;
-  height: 80px;
+  bottom: -30px;
+  left: -30px;
+  width: 100px;
+  height: 100px;
   background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
   border-radius: 50%;
 }
@@ -154,9 +184,7 @@ button:active {
 /* ── Login screen ── */
 
 .login-gradient {
-  background: linear-gradient(150deg, #1a4b58 0%, #2d6a4f 50%, #1a4b58 100%);
-  background-size: 200% 200%;
-  animation: gradientShift 8s ease infinite;
+  background: linear-gradient(150deg, #1a4b58 0%, #0f2d3a 100%);
 }
 
 /* ── Bottom sheet ── */
@@ -179,7 +207,7 @@ button:active {
   animation: sheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* ── Card hover states ── */
+/* ── Card styles ── */
 
 .card-interactive {
   transition: box-shadow 0.2s ease, transform 0.15s ease;
@@ -192,9 +220,10 @@ button:active {
 /* ── Section labels ── */
 
 .section-label {
-  font-size: 12px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #8a8580;
 }
@@ -202,26 +231,25 @@ button:active {
 /* ── Stat cards ── */
 
 .stat-card {
-  background: linear-gradient(135deg, #ffffff 0%, #faf8f5 100%);
-  border: 1px solid #e5e0d8;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 3px 10px rgba(0,0,0,0.03);
   border-radius: 12px;
-  padding: 12px 8px;
+  padding: 14px 8px;
   text-align: center;
-  flex: 1;
 }
 
 /* ── Progress bar ── */
 
 .progress-track {
   height: 6px;
-  background: linear-gradient(90deg, #f0eeea, #e5e0d8);
+  background: #eeebe5;
   border-radius: 6px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2d6a4f, #3a7d5c);
+  background: linear-gradient(90deg, #1a4b58, #b8860b);
   border-radius: 6px;
   transition: width 0.6s cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -229,10 +257,10 @@ button:active {
 /* ── Tip card ── */
 
 .tip-card {
-  background: linear-gradient(135deg, #faf8f5 0%, #f5f3ef 100%);
-  border: 1px solid #e5e0d8;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 3px 10px rgba(0,0,0,0.03);
   border-radius: 14px;
-  padding: 16px 18px;
+  padding: 18px 20px 18px 22px;
   position: relative;
 }
 
@@ -240,10 +268,10 @@ button:active {
   content: "";
   position: absolute;
   left: 0;
-  top: 12px;
-  bottom: 12px;
+  top: 14px;
+  bottom: 14px;
   width: 3px;
-  background: linear-gradient(to bottom, #2d6a4f, #1a4b58);
+  background: linear-gradient(to bottom, #1a4b58, #b8860b);
   border-radius: 0 3px 3px 0;
 }
 
@@ -251,13 +279,13 @@ button:active {
 
 .empty-state {
   text-align: center;
-  padding: 32px 20px;
+  padding: 36px 20px;
 }
 
 .empty-state-icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 12px;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
   border-radius: 50%;
   background: linear-gradient(135deg, #f5f3ef, #eeebe5);
   display: flex;
@@ -269,33 +297,20 @@ button:active {
 
 .pipeline-section {
   position: relative;
-  padding-left: 16px;
-  margin-bottom: 28px;
+  padding-left: 0;
+  margin-bottom: 32px;
 }
-
-.pipeline-section::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  border-radius: 3px;
-}
-
-.pipeline-pursuing::before { background: linear-gradient(to bottom, #1a1a1a, #555555); }
-.pipeline-applied::before { background: linear-gradient(to bottom, #2563eb, #60a5fa); }
-.pipeline-interviewing::before { background: linear-gradient(to bottom, #6d28d9, #a78bfa); }
 
 /* ── Review CTA ── */
 
 .review-cta {
-  background: linear-gradient(135deg, #1a4b58, #2d6a4f);
+  background: linear-gradient(135deg, #1a4b58, #0f2d3a);
   color: white;
   border: none;
-  border-radius: 12px;
-  padding: 14px 20px;
-  font-size: 14px;
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   width: 100%;
@@ -303,18 +318,66 @@ button:active {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: opacity 0.2s;
+  box-shadow: 0 2px 8px rgba(26,75,88,0.2);
+  transition: opacity 0.2s, transform 0.1s;
 }
 
 .review-cta:hover {
   opacity: 0.95;
 }
 
+.review-cta:active {
+  transform: scale(0.98);
+}
+
 /* ── Bottom nav ── */
 
 .bottom-nav {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(229, 224, 216, 0.6);
+  border-top: 1px solid rgba(229, 224, 216, 0.5);
+}
+
+/* ── Attention card accent bars ── */
+
+.attn-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.attn-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.attn-interview::before {
+  background: #6b4c9a;
+}
+
+.attn-deadline::before {
+  background: #b8860b;
+}
+
+/* ── Score badges ── */
+
+.badge-fit {
+  background: #b8860b;
+  color: white;
+}
+
+.badge-match {
+  background: #1a4b58;
+  color: white;
+}
+
+/* ── Serif heading utility ── */
+
+.heading-serif {
+  font-family: "DM Serif Display", Georgia, serif;
 }

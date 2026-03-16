@@ -7,18 +7,11 @@ interface ScoreBadgesProps {
   compact?: boolean;
 }
 
-function badgeColor(score: number | null): string {
-  if (score === null) return "bg-surface-alt text-text-tertiary";
-  if (score >= 8) return "bg-green-light text-green";
-  if (score >= 6) return "bg-amber-light text-amber";
-  return "bg-surface-alt text-text-tertiary";
-}
-
 export default function ScoreBadges({ fitScore, matchScore, totalScore, compact }: ScoreBadgesProps) {
   // No scores at all
   if (fitScore === null && matchScore === null && totalScore === null) {
     return (
-      <div className="flex-shrink-0 bg-surface-alt text-text-tertiary rounded-std px-2.5 py-1.5 text-[11px] font-semibold">
+      <div className="flex-shrink-0 bg-gold-light text-gold rounded-std px-2.5 py-1.5 text-[11px] font-bold">
         NEW
       </div>
     );
@@ -27,11 +20,10 @@ export default function ScoreBadges({ fitScore, matchScore, totalScore, compact 
   const size = compact ? "px-2 py-1 text-[11px]" : "px-2.5 py-1.5 text-xs";
 
   // Old-format jobs: only matchScore (old blended), no fitScore or totalScore
-  // Show a single score badge instead of two with a confusing dash
   if (fitScore === null && totalScore === null && matchScore !== null) {
     return (
       <div className="flex-shrink-0">
-        <div className={`rounded-std font-bold font-mono ${size} ${badgeColor(matchScore)}`}>
+        <div className={`badge-match rounded-std font-bold font-mono ${size}`}>
           {matchScore}
         </div>
       </div>
@@ -41,13 +33,13 @@ export default function ScoreBadges({ fitScore, matchScore, totalScore, compact 
   // v6 format: both sub-scores available
   return (
     <div className="flex gap-1 flex-shrink-0">
-      <div className={`rounded-std font-bold font-mono ${size} ${badgeColor(fitScore)}`}>
-        {fitScore ?? "–"}{" "}
-        <span className="font-semibold font-sans text-[10px] opacity-70">Fit</span>
+      <div className={`badge-fit rounded-std font-bold font-mono ${size}`}>
+        {fitScore ?? "?"}{" "}
+        <span className="font-semibold font-sans text-[10px] opacity-80">Fit</span>
       </div>
-      <div className={`rounded-std font-bold font-mono ${size} ${badgeColor(matchScore)}`}>
-        {matchScore ?? "–"}{" "}
-        <span className="font-semibold font-sans text-[10px] opacity-70">Match</span>
+      <div className={`badge-match rounded-std font-bold font-mono ${size}`}>
+        {matchScore ?? "?"}{" "}
+        <span className="font-semibold font-sans text-[10px] opacity-80">Match</span>
       </div>
     </div>
   );

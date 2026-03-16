@@ -15,19 +15,23 @@ interface PipelineViewProps {
 function SectionHead({
   title,
   count,
-  colorClass,
+  dotColor,
 }: {
   title: string;
   count: number;
-  colorClass: string;
+  dotColor: string;
 }) {
   return (
     <div className="flex items-center gap-2.5 mb-3">
-      <span className={`text-[15px] font-bold ${colorClass}`}>
+      <div
+        className="w-3 h-3 rounded-full flex-shrink-0"
+        style={{ background: dotColor }}
+      />
+      <span className="heading-serif text-[16px] text-text-primary">
         {title}
       </span>
-      <span className="text-xs font-semibold text-text-tertiary bg-surface-alt px-2 py-0.5 rounded-full">
-        {count}
+      <span className="text-xs font-semibold text-text-tertiary">
+        ({count})
       </span>
     </div>
   );
@@ -107,7 +111,7 @@ function PursuingCard({
   const isTailoring = job.resumeReviewStatus === "Not Started";
 
   return (
-    <div className="bg-surface rounded-card shadow-card border border-border-light p-4 mb-2.5">
+    <div className="bg-surface rounded-card shadow-card p-4 mb-3">
       <div className="flex items-start gap-2.5">
         <div className="flex-1 min-w-0">
           <div className="font-bold text-sm text-text-primary">
@@ -139,7 +143,7 @@ function PursuingCard({
 
           {isApproved && (
             <div className="flex items-center gap-1.5 mt-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a7d6a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
               <span className="text-xs text-green font-bold">
@@ -218,8 +222,8 @@ function AppliedCard({
 
   return (
     <div
-      className={`bg-surface rounded-card shadow-card p-4 mb-2.5 border ${
-        nudge ? "border-amber/20" : "border-border-light"
+      className={`bg-surface rounded-card shadow-card p-4 mb-3 ${
+        nudge ? "ring-1 ring-amber/20" : ""
       }`}
     >
       <div className="font-bold text-sm text-text-primary">
@@ -307,7 +311,7 @@ function InterviewingCard({ job }: { job: Job }) {
     job.notebookLMStatus !== "Prep Complete";
 
   return (
-    <div className="bg-surface rounded-card shadow-card border border-purple/10 p-4 mb-2.5">
+    <div className="bg-surface rounded-card shadow-card p-4 mb-3">
       <div className="font-bold text-sm text-text-primary">
         {job.jobTitle}
       </div>
@@ -384,8 +388,8 @@ export default function PipelineView({
   return (
     <div>
       {/* Pursuing */}
-      <div className="pipeline-section pipeline-pursuing">
-        <SectionHead title="Pursuing" count={pursuing.length} colorClass="text-text-primary" />
+      <div className="pipeline-section">
+        <SectionHead title="Pursuing" count={pursuing.length} dotColor="#b8860b" />
         {pursuing.length === 0 ? (
           <Empty
             msg="Bookmark jobs from Review to start building your pipeline."
@@ -404,8 +408,8 @@ export default function PipelineView({
       </div>
 
       {/* Applied */}
-      <div className="pipeline-section pipeline-applied">
-        <SectionHead title="Applied" count={applied.length} colorClass="text-blue" />
+      <div className="pipeline-section">
+        <SectionHead title="Applied" count={applied.length} dotColor="#5a7d6a" />
         {applied.length === 0 ? (
           <Empty
             msg="No active applications yet."
@@ -420,8 +424,8 @@ export default function PipelineView({
       </div>
 
       {/* Interviewing */}
-      <div className="pipeline-section pipeline-interviewing">
-        <SectionHead title="Interviewing" count={interviewing.length} colorClass="text-purple" />
+      <div className="pipeline-section">
+        <SectionHead title="Interviewing" count={interviewing.length} dotColor="#6b4c9a" />
         {interviewing.length === 0 ? (
           <Empty
             msg="No interviews scheduled."

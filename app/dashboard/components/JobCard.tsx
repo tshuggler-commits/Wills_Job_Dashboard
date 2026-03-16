@@ -25,7 +25,7 @@ interface JobCardProps {
 function BookmarkIcon({ filled }: { filled: boolean }) {
   if (filled) {
     return (
-      <svg width={18} height={18} viewBox="0 0 16 16" fill="#1a4b58">
+      <svg width={18} height={18} viewBox="0 0 16 16" fill="#b8860b">
         <path d="M3 2.5A1.5 1.5 0 014.5 1h7A1.5 1.5 0 0113 2.5v12.207a.5.5 0 01-.777.416L8 12.118l-4.223 3.005A.5.5 0 013 14.707V2.5z" />
       </svg>
     );
@@ -71,7 +71,7 @@ export default function JobCard({
     : "";
 
   return (
-    <div className="bg-surface rounded-card mb-2.5 overflow-hidden border border-border-light shadow-card card-interactive">
+    <div className="bg-surface rounded-card mb-3 overflow-hidden shadow-card card-interactive">
       {/* Collapsed row */}
       <div className="px-3 py-3.5 pl-4 flex gap-3 items-start">
         {/* Bookmark */}
@@ -80,7 +80,7 @@ export default function JobCard({
             e.stopPropagation();
             onBookmark(job.id, !job.bookmarked);
           }}
-          className="bg-transparent border-none cursor-pointer p-0.5 flex-shrink-0 mt-0.5 transition-opacity"
+          className={`bg-transparent border-none cursor-pointer p-0.5 flex-shrink-0 mt-0.5 transition-opacity ${job.bookmarked ? "bookmark-bounce" : ""}`}
           style={{ opacity: job.bookmarked ? 1 : 0.35 }}
         >
           <BookmarkIcon filled={job.bookmarked} />

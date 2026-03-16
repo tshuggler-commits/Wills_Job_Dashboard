@@ -23,15 +23,18 @@ export default function ResumeReview({
     .filter(Boolean);
 
   return (
-    <div className="bg-surface border border-green-border rounded-std overflow-hidden">
+    <div className="bg-surface rounded-card shadow-card overflow-hidden">
       <div
         onClick={() => setOpen(!open)}
-        className="px-3.5 py-3 cursor-pointer flex items-center justify-between"
+        className="px-4 py-3.5 cursor-pointer flex items-center justify-between"
       >
-        <span className="text-xs font-semibold text-green">
-          Resume ready for review
-        </span>
-        <span className="text-xs text-text-tertiary">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-green flex-shrink-0" />
+          <span className="text-[13px] font-semibold text-green">
+            Resume ready for review
+          </span>
+        </div>
+        <span className="text-xs text-text-tertiary font-medium">
           {open ? "Hide" : "Review"}
         </span>
       </div>
@@ -39,8 +42,9 @@ export default function ResumeReview({
       {open && (
         <div className="expand-in border-t border-border-light">
           {/* Tailored Summary */}
-          <div className="px-3.5 py-3 border-b border-border-light">
-            <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-1.5">
+          <div className="px-4 py-3.5 border-b border-border-light">
+            <div className="section-label mb-2 flex items-center gap-1.5">
+              <span className="w-1 h-3 bg-teal rounded-full" />
               Tailored Summary
             </div>
             <p className="text-[13px] text-text-primary leading-relaxed">
@@ -49,15 +53,16 @@ export default function ResumeReview({
           </div>
 
           {/* Skills */}
-          <div className="px-3.5 py-3 border-b border-border-light">
-            <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-1.5">
+          <div className="px-4 py-3.5 border-b border-border-light">
+            <div className="section-label mb-2 flex items-center gap-1.5">
+              <span className="w-1 h-3 bg-green rounded-full" />
               Skills Emphasized
             </div>
             <div className="flex flex-wrap gap-1.5">
               {skills.map((s, i) => (
                 <span
                   key={i}
-                  className="text-xs text-green bg-green-light px-2.5 py-0.5 rounded font-medium"
+                  className="text-xs text-green bg-green-light px-2.5 py-1 rounded-std font-medium"
                 >
                   {s}
                 </span>
@@ -66,8 +71,9 @@ export default function ResumeReview({
           </div>
 
           {/* Experience Framing */}
-          <div className="px-3.5 py-3 border-b border-border-light">
-            <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-1.5">
+          <div className="px-4 py-3.5 border-b border-border-light">
+            <div className="section-label mb-2 flex items-center gap-1.5">
+              <span className="w-1 h-3 bg-gold rounded-full" />
               How Experience Was Positioned
             </div>
             <p className="text-[13px] text-text-secondary leading-relaxed">
@@ -76,14 +82,14 @@ export default function ResumeReview({
           </div>
 
           {/* Actions */}
-          <div className="px-3.5 py-3 flex gap-2">
+          <div className="px-4 py-3.5 flex gap-2.5">
             <button
               onClick={onApprove}
-              className="flex-1 bg-text-primary text-white border-none py-2.5 rounded-std text-[13px] font-semibold cursor-pointer"
+              className="flex-1 bg-teal text-white border-none py-2.5 rounded-std text-[13px] font-bold cursor-pointer shadow-button"
             >
               Approve
             </button>
-            <button className="flex-1 bg-surface-alt text-text-secondary border border-border py-2.5 rounded-std text-[13px] font-medium cursor-pointer">
+            <button className="flex-1 bg-surface-alt text-text-secondary border-none py-2.5 rounded-std text-[13px] font-medium cursor-pointer shadow-sm">
               Edit Full Doc
             </button>
           </div>

@@ -14,7 +14,6 @@ interface TodayViewProps {
   onNavigateToReview: () => void;
 }
 
-// Category display names
 const CATEGORY_LABELS: Record<TipCategory, string> = {
   interview_prep: "Interview Prep",
   career_gap: "Career Gap",
@@ -32,6 +31,13 @@ function getDayOfYear(): number {
   return Math.floor(diff / 86400000);
 }
 
+function getTimeGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 function getContextualMessage(jobs: Job[]): string {
   const now = new Date();
   const todayStr = now.toISOString().split("T")[0];
@@ -44,7 +50,6 @@ function getContextualMessage(jobs: Job[]): string {
   const applied = active.filter((j) => j.status === "Applied");
   const interviewing = active.filter((j) => j.status === "Interview");
 
-  // Priority 1: Interview within 48 hours
   const upcomingInterview = interviewing.find((j) => {
     const d = daysUntil(j.expectedResponseBy);
     return d !== null && d >= 0 && d <= 2;
@@ -60,9 +65,7 @@ function getContextualMessage(jobs: Job[]): string {
   if (interviewing.length > 0) {
     const msgs = CONTEXTUAL_MESSAGES.find((m) => m.trigger === "interview_within_48h")!.messages;
     const msg = msgs[getDayOfYear() % msgs.length];
-    return msg
-      .replace(/{company}/g, interviewing[0].company)
-      .replace(/{timeframe}/g, "soon");
+    return msg.replace(/{company}/g, interviewing[0].company).replace(/{timeframe}/g, "soon");
   }
 
   const recentlyApproved = active.find(
@@ -71,18 +74,14 @@ function getContextualMessage(jobs: Job[]): string {
   if (recentlyApproved) {
     const msgs = CONTEXTUAL_MESSAGES.find((m) => m.trigger === "resume_just_approved")!.messages;
     const msg = msgs[getDayOfYear() % msgs.length];
-    return msg
-      .replace(/{company}/g, recentlyApproved.company)
-      .replace(/{jobTitle}/g, recentlyApproved.jobTitle);
+    return msg.replace(/{company}/g, recentlyApproved.company).replace(/{jobTitle}/g, recentlyApproved.jobTitle);
   }
 
   const resumeReady = active.find((j) => j.resumeReviewStatus === "AI Draft Ready");
   if (resumeReady) {
     const msgs = CONTEXTUAL_MESSAGES.find((m) => m.trigger === "resume_ready_for_review")!.messages;
     const msg = msgs[getDayOfYear() % msgs.length];
-    return msg
-      .replace(/{company}/g, resumeReady.company)
-      .replace(/{jobTitle}/g, resumeReady.jobTitle);
+    return msg.replace(/{company}/g, resumeReady.company).replace(/{jobTitle}/g, resumeReady.jobTitle);
   }
 
   const followUpDue = applied.find((j) => {
@@ -93,9 +92,7 @@ function getContextualMessage(jobs: Job[]): string {
     const d = daysSince(followUpDue.lastFollowUpDate || followUpDue.dateApplied)!;
     const msgs = CONTEXTUAL_MESSAGES.find((m) => m.trigger === "followup_due")!.messages;
     const msg = msgs[getDayOfYear() % msgs.length];
-    return msg
-      .replace(/{company}/g, followUpDue.company)
-      .replace(/{days}/g, String(d));
+    return msg.replace(/{company}/g, followUpDue.company).replace(/{days}/g, String(d));
   }
 
   const newToday = active.filter((j) => j.dateFound === todayStr);
@@ -109,24 +106,16 @@ function getContextualMessage(jobs: Job[]): string {
   if (appliedYesterday) {
     const msgs = CONTEXTUAL_MESSAGES.find((m) => m.trigger === "application_sent_yesterday")!.messages;
     const msg = msgs[getDayOfYear() % msgs.length];
-    return msg
-      .replace(/{company}/g, appliedYesterday.company)
-      .replace(/{totalApplied}/g, String(applied.length));
+    return msg.replace(/{company}/g, appliedYesterday.company).replace(/{totalApplied}/g, String(applied.length));
   }
 
   if (pursuing.length > 0 || applied.length > 0) {
     const msgs = CONTEXTUAL_MESSAGES.find((m) => m.trigger === "pipeline_active_nothing_urgent")!.messages;
     const msg = msgs[getDayOfYear() % msgs.length];
-    return msg
-      .replace(/{pursuing}/g, String(pursuing.length))
-      .replace(/{applied}/g, String(applied.length));
+    return msg.replace(/{pursuing}/g, String(pursuing.length)).replace(/{applied}/g, String(applied.length));
   }
 
-  const lastAppliedDate = applied
-    .map((j) => j.dateApplied)
-    .filter(Boolean)
-    .sort()
-    .reverse()[0];
+  const lastAppliedDate = applied.map((j) => j.dateApplied).filter(Boolean).sort().reverse()[0];
   const daysSinceLastApp = daysSince(lastAppliedDate || null);
   if (daysSinceLastApp !== null && daysSinceLastApp >= 5) {
     const msgs = CONTEXTUAL_MESSAGES.find((m) => m.trigger === "dry_spell_5_plus_days")!.messages;
@@ -163,11 +152,9 @@ function getPipelineStates(jobs: Job[]): string[] {
   return states;
 }
 
-// ── SVG icons for empty states ──
-
 function CheckCircleIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5a7d6a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
       <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
@@ -216,7 +203,6 @@ export default function TodayView({
   const newJobCount = active.filter((j) => j.status === "New").length;
 
   const contextualMessage = getContextualMessage(jobs);
-
   const pipelineStates = getPipelineStates(jobs);
   const tip = selectTip(pipelineStates, getDayOfYear());
 
@@ -225,19 +211,21 @@ export default function TodayView({
   const progressPct = totalDiscovered > 0 ? Math.round((converted / totalDiscovered) * 100) : 0;
 
   const stats = [
-    { value: reviewedCount, label: "Reviewed", color: "text-text-primary" },
-    { value: pursuingCount, label: "Pursuing", color: "text-teal" },
-    { value: appliedCount, label: "Applied", color: "text-blue" },
+    { value: reviewedCount, label: "Reviewed", color: "text-teal" },
+    { value: pursuingCount, label: "Pursuing", color: "text-gold" },
+    { value: appliedCount, label: "Applied", color: "text-green" },
     { value: interviewCount, label: "Interview", color: "text-purple" },
   ];
 
   return (
     <div>
       {/* Gradient header */}
-      <div className="today-header mb-5">
+      <div className="today-header mb-6">
         <p className="text-[13px] text-white/50 font-medium">{todayFormatted()}</p>
-        <h1 className="text-[22px] font-bold text-white mt-1">Hey, {userName}</h1>
-        <p className="text-[14px] text-white/85 leading-relaxed mt-3">
+        <h1 className="heading-serif text-[24px] text-white mt-1.5">
+          {getTimeGreeting()}, {userName}
+        </h1>
+        <p className="text-[14px] text-white/80 leading-relaxed mt-3">
           {contextualMessage}
         </p>
       </div>
@@ -246,34 +234,38 @@ export default function TodayView({
       <MondayBanner jobs={active} />
 
       {/* Needs Attention */}
-      <div className="mb-5">
-        <div className="section-label mb-2.5 px-0.5">Needs attention</div>
+      <div className="mb-6">
+        <div className="section-label mb-3 px-0.5">Needs attention</div>
         {attentionJobs.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">
               <CheckCircleIcon />
             </div>
-            <p className="text-sm text-text-secondary">
-              Nothing urgent today. You&apos;re on track.
+            <p className="text-[14px] text-text-secondary font-medium">
+              Nothing urgent today
+            </p>
+            <p className="text-[13px] text-text-tertiary mt-0.5">
+              You&apos;re on track. Keep it up.
             </p>
           </div>
         ) : (
           attentionJobs.map((j) => (
             <div
               key={j.id + "-attn"}
-              className={`rounded-card p-3.5 mb-2 flex items-center justify-between shadow-card ${
-                j.status === "Interview"
-                  ? "bg-purple-light border border-purple/10"
-                  : "bg-amber-light border border-amber/15"
+              className={`attn-card p-4 pl-5 mb-3 flex items-center justify-between bg-white shadow-card ${
+                j.status === "Interview" ? "attn-interview" : "attn-deadline"
               }`}
             >
               <div>
-                <div className="text-[13px] font-semibold text-text-primary">
-                  {j.jobTitle} at {j.company}
+                <div className="text-[14px] font-semibold text-text-primary">
+                  {j.jobTitle}
+                </div>
+                <div className="text-[13px] text-text-secondary mt-0.5">
+                  {j.company}
                 </div>
                 <div
-                  className={`text-xs font-semibold mt-0.5 ${
-                    j.status === "Interview" ? "text-purple" : "text-amber"
+                  className={`text-xs font-bold mt-1 ${
+                    j.status === "Interview" ? "text-purple" : "text-gold"
                   }`}
                 >
                   {j.status === "Interview"
@@ -282,7 +274,7 @@ export default function TodayView({
                 </div>
               </div>
               {j.status === "Interview" && (
-                <button className="bg-purple text-white border-none px-4 py-2 rounded-std text-xs font-bold cursor-pointer shadow-sm">
+                <button className="bg-purple text-white border-none px-4 py-2.5 rounded-std text-xs font-bold cursor-pointer shadow-button">
                   Prep
                 </button>
               )}
@@ -292,24 +284,24 @@ export default function TodayView({
       </div>
 
       {/* Resume Reviews */}
-      <div className="mb-5">
-        <div className="section-label mb-2.5 px-0.5">Resume reviews</div>
+      <div className="mb-6">
+        <div className="section-label mb-3 px-0.5">Resume reviews</div>
         {resumeReviews.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">
               <FileIcon />
             </div>
-            <p className="text-sm text-text-secondary">
-              No resumes waiting for review.
+            <p className="text-[14px] text-text-secondary font-medium">
+              No resumes waiting
             </p>
-            <p className="text-xs text-text-tertiary mt-1">
+            <p className="text-[13px] text-text-tertiary mt-0.5">
               Bookmark a job and we&apos;ll tailor one for you.
             </p>
           </div>
         ) : (
           resumeReviews.map((j) => (
-            <div key={j.id + "-resume"} className="mb-2">
-              <div className="text-[13px] font-semibold text-text-primary mb-1.5 px-0.5">
+            <div key={j.id + "-resume"} className="mb-3">
+              <div className="text-[14px] font-semibold text-text-primary mb-2 px-0.5">
                 {j.company} · {j.jobTitle}
               </div>
               <ResumeReview
@@ -323,16 +315,16 @@ export default function TodayView({
         )}
       </div>
 
-      {/* Stats Row */}
-      <div className="mb-4">
-        <div className="section-label mb-2.5 px-0.5">Your search</div>
-        <div className="flex gap-2">
+      {/* Stats - 2x2 grid */}
+      <div className="mb-5">
+        <div className="section-label mb-3 px-0.5">Your search</div>
+        <div className="grid grid-cols-2 gap-3">
           {stats.map((s) => (
             <div key={s.label} className="stat-card">
-              <div className={`text-lg font-bold font-mono ${s.color}`}>
+              <div className={`text-2xl font-bold font-mono ${s.color}`}>
                 {s.value}
               </div>
-              <div className="text-[10px] font-bold text-text-tertiary uppercase mt-0.5">
+              <div className="text-[11px] font-bold text-text-tertiary uppercase mt-1">
                 {s.label}
               </div>
             </div>
@@ -341,33 +333,33 @@ export default function TodayView({
       </div>
 
       {/* Progress bar */}
-      <div className="mb-5 px-0.5">
+      <div className="mb-6 px-0.5">
         <div className="progress-track">
           <div
             className="progress-fill"
             style={{ width: `${Math.max(progressPct, 3)}%` }}
           />
         </div>
-        <div className="text-[11px] text-text-tertiary mt-1.5 font-medium">
-          {converted} of {totalDiscovered} &rarr; applied or interviewing
+        <div className="text-[12px] text-text-tertiary mt-2 font-medium">
+          {converted} of {totalDiscovered} moved to applied or interviewing
         </div>
       </div>
 
       {/* Daily Tip */}
-      <div className="tip-card mb-5">
-        <div className="text-[10px] font-bold text-teal uppercase tracking-wider mb-1.5 pl-1">
+      <div className="tip-card mb-6">
+        <div className="text-[11px] font-bold text-teal uppercase tracking-wider mb-2 pl-1">
           {CATEGORY_LABELS[tip.category]}
         </div>
-        <p className="text-[13px] text-text-secondary leading-relaxed pl-1">
+        <p className="text-[14px] text-text-secondary leading-[1.6] pl-1">
           {tip.text}
         </p>
       </div>
 
-      {/* Review link */}
+      {/* Review new jobs CTA */}
       {newJobCount > 0 && (
         <button
           onClick={onNavigateToReview}
-          className="review-cta mb-5"
+          className="review-cta mb-6"
         >
           Review {newJobCount} new {newJobCount === 1 ? "job" : "jobs"}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

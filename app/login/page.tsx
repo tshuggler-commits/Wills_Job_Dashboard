@@ -44,16 +44,16 @@ export default function LoginPage() {
           alt=""
           className="w-20 h-20 rounded-2xl shadow-lg"
         />
-        <h1 className="text-[28px] font-bold text-white mt-4 tracking-tight">
+        <h1 className="heading-serif text-[32px] text-white mt-4">
           Career Compass
         </h1>
-        <p className="text-sm text-white/60 mt-1">
-          Will&apos;s Job Search Dashboard
+        <p className="text-sm text-white/50 mt-1.5 font-medium">
+          Your job search co-pilot
         </p>
       </div>
 
       {/* Login card */}
-      <div className="w-full max-w-[360px] bg-white rounded-2xl p-8 shadow-lg fade-in">
+      <div className="w-full max-w-[360px] bg-white rounded-[20px] p-8 shadow-lg fade-in">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="section-label block mb-2">
@@ -90,7 +90,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-12 bg-green text-white font-bold text-sm rounded-std hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm"
+            className="w-full h-[52px] bg-teal text-white font-bold text-[15px] rounded-std hover:opacity-90 disabled:opacity-50 transition-opacity shadow-button"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
