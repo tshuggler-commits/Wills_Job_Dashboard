@@ -14,31 +14,58 @@ interface PipelineViewProps {
 
 function SectionHead({
   title,
-  color,
   count,
+  colorClass,
 }: {
   title: string;
-  color: string;
   count: number;
+  colorClass: string;
 }) {
   return (
-    <div className="flex items-center gap-2 mb-2.5 px-0.5">
-      <div
-        className="w-2 h-2 rounded-full"
-        style={{ background: color }}
-      />
-      <span className="text-[13px] font-semibold text-text-primary">
+    <div className="flex items-center gap-2.5 mb-3">
+      <span className={`text-[15px] font-bold ${colorClass}`}>
         {title}
       </span>
-      <span className="text-xs text-text-tertiary">({count})</span>
+      <span className="text-xs font-semibold text-text-tertiary bg-surface-alt px-2 py-0.5 rounded-full">
+        {count}
+      </span>
     </div>
   );
 }
 
-function Empty({ msg }: { msg: string }) {
+// ── Empty state icons ──
+
+function BookmarkEmptyIcon() {
   return (
-    <div className="text-sm text-text-secondary text-center py-6">
-      {msg}
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8a8580" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function SendEmptyIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8a8580" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+
+function MicEmptyIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8a8580" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
+    </svg>
+  );
+}
+
+function Empty({ msg, subMsg, icon }: { msg: string; subMsg?: string; icon: React.ReactNode }) {
+  return (
+    <div className="empty-state">
+      <div className="empty-state-icon">{icon}</div>
+      <p className="text-sm text-text-secondary">{msg}</p>
+      {subMsg && <p className="text-xs text-text-tertiary mt-1">{subMsg}</p>}
     </div>
   );
 }
@@ -80,20 +107,20 @@ function PursuingCard({
   const isTailoring = job.resumeReviewStatus === "Not Started";
 
   return (
-    <div className="bg-surface rounded-card border border-border p-3.5 mb-2">
+    <div className="bg-surface rounded-card shadow-card border border-border-light p-4 mb-2.5">
       <div className="flex items-start gap-2.5">
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-sm text-text-primary">
+          <div className="font-bold text-sm text-text-primary">
             {job.jobTitle}
           </div>
-          <div className="text-xs text-text-secondary">
+          <div className="text-xs text-text-secondary mt-0.5">
             {job.company} · {job.workType} ·{" "}
             {job.salaryRange || "Salary TBD"}
           </div>
 
           {job.applyBy && dLeft !== null && (
             <div
-              className={`text-[11px] font-medium mt-0.5 ${
+              className={`text-[11px] font-semibold mt-1 ${
                 dLeft <= 5 ? "text-amber" : "text-text-tertiary"
               }`}
             >
@@ -102,18 +129,23 @@ function PursuingCard({
           )}
 
           {isTailoring && (
-            <div className="flex items-center gap-1.5 mt-2">
-              <div className="spinner w-3 h-3 rounded-full border-2 border-text-tertiary border-t-transparent" />
-              <span className="text-xs text-text-tertiary font-medium">
+            <div className="flex items-center gap-1.5 mt-2.5">
+              <div className="spinner w-3.5 h-3.5 rounded-full border-2 border-teal/30 border-t-teal" />
+              <span className="text-xs text-teal font-medium">
                 Tailoring resume...
               </span>
             </div>
           )}
 
           {isApproved && (
-            <span className="text-xs text-green font-semibold block mt-1.5">
-              Resume approved. Ready to apply.
-            </span>
+            <div className="flex items-center gap-1.5 mt-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span className="text-xs text-green font-bold">
+                Resume approved — ready to apply
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -130,14 +162,14 @@ function PursuingCard({
       )}
 
       {isApproved && job.applyLink && (
-        <div className="mt-2.5 flex gap-2 items-center">
+        <div className="mt-3 flex gap-2 items-center">
           <a
             href={job.applyLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-text-primary text-white px-4 py-2 rounded-std text-[13px] font-semibold no-underline inline-flex items-center gap-1.5"
+            className="bg-teal text-white px-5 py-2.5 rounded-std text-[13px] font-bold no-underline inline-flex items-center gap-1.5 shadow-sm"
           >
-            Apply <ExternalIcon />
+            Apply Now <ExternalIcon />
           </a>
         </div>
       )}
@@ -160,8 +192,6 @@ function AppliedCard({
   const d = daysSince(job.dateApplied);
   const lastFU = daysSince(job.lastFollowUpDate);
 
-  // Nudge logic: if follow-up exists, nudge 7-10 days after that.
-  // If no follow-up, nudge 10 days after application.
   let nudge = false;
   let strongNudge = false;
   if (lastFU !== null) {
@@ -188,18 +218,18 @@ function AppliedCard({
 
   return (
     <div
-      className={`bg-surface rounded-std border p-3 pb-3.5 mb-1.5 ${
-        nudge ? "border-amber/25" : "border-border"
+      className={`bg-surface rounded-card shadow-card p-4 mb-2.5 border ${
+        nudge ? "border-amber/20" : "border-border-light"
       }`}
     >
-      <div className="font-semibold text-sm text-text-primary">
+      <div className="font-bold text-sm text-text-primary">
         {job.jobTitle}
       </div>
-      <div className="text-xs text-text-secondary">
+      <div className="text-xs text-text-secondary mt-0.5">
         {job.company} · {job.workType}
       </div>
       <div
-        className={`mt-0.5 text-xs ${
+        className={`mt-1 text-xs font-medium ${
           nudge ? "text-amber font-semibold" : "text-text-tertiary"
         }`}
       >
@@ -216,32 +246,32 @@ function AppliedCard({
         </div>
       )}
 
-      <div className="flex gap-2 mt-2.5 items-center">
+      <div className="flex gap-2 mt-3 items-center">
         <button
           onClick={() => {
             onFollowUp(job.id);
           }}
-          className="bg-surface-alt text-text-secondary border border-border px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer"
+          className="bg-surface-alt text-text-primary border border-border px-3.5 py-2 rounded-std text-xs font-semibold cursor-pointer"
         >
           I followed up
         </button>
         <button
           onClick={() => setShowTemplates(!showTemplates)}
-          className="bg-transparent text-text-tertiary border-none px-2 py-1.5 text-xs font-medium cursor-pointer"
+          className="bg-transparent text-teal border-none px-2 py-2 text-xs font-semibold cursor-pointer"
         >
           {showTemplates ? "Hide templates" : "Email template"}
         </button>
       </div>
 
       {showTemplates && (
-        <div className="mt-2.5 space-y-1.5">
+        <div className="mt-3 space-y-1.5 expand-in">
           {followUpTemplates.map((t) => (
             <div
               key={t.id}
-              className="flex items-center justify-between bg-surface-alt rounded-md px-3 py-2 border border-border-light"
+              className="flex items-center justify-between bg-surface-alt rounded-std px-3.5 py-2.5 border border-border-light"
             >
               <div>
-                <div className="text-xs font-medium text-text-primary">
+                <div className="text-xs font-semibold text-text-primary">
                   {t.label}
                 </div>
                 <div className="text-[11px] text-text-tertiary">
@@ -250,13 +280,13 @@ function AppliedCard({
               </div>
               <button
                 onClick={() => copyTemplate(t.id)}
-                className={`text-xs font-medium border-none cursor-pointer px-2.5 py-1 rounded ${
+                className={`text-xs font-semibold border-none cursor-pointer px-3 py-1.5 rounded-std transition-colors ${
                   copied === t.id
                     ? "bg-green-light text-green"
                     : "bg-surface text-text-secondary border border-border"
                 }`}
               >
-                {copied === t.id ? "Copied" : "Copy"}
+                {copied === t.id ? "Copied!" : "Copy"}
               </button>
             </div>
           ))}
@@ -277,28 +307,28 @@ function InterviewingCard({ job }: { job: Job }) {
     job.notebookLMStatus !== "Prep Complete";
 
   return (
-    <div className="bg-surface rounded-std border border-border p-3 pb-3.5 mb-1.5">
-      <div className="font-semibold text-sm text-text-primary">
+    <div className="bg-surface rounded-card shadow-card border border-purple/10 p-4 mb-2.5">
+      <div className="font-bold text-sm text-text-primary">
         {job.jobTitle}
       </div>
-      <div className="text-xs text-text-secondary">
+      <div className="text-xs text-text-secondary mt-0.5">
         {job.company} · {job.workType}
       </div>
 
       {job.interviewRound && (
-        <div className="text-[11px] text-purple font-semibold mt-1">
+        <div className="inline-block text-[11px] text-purple font-bold mt-1.5 bg-purple-light px-2 py-0.5 rounded-full">
           {job.interviewRound}
         </div>
       )}
 
       {job.interviewerName && (
-        <div className="text-[11px] text-text-tertiary mt-0.5">
+        <div className="text-[11px] text-text-tertiary mt-1">
           with {job.interviewerName}
         </div>
       )}
 
       {job.nextStep && (
-        <div className="text-[11px] text-text-secondary mt-1">
+        <div className="text-[11px] text-text-secondary mt-1 font-medium">
           Next: {job.nextStep}
         </div>
       )}
@@ -309,28 +339,28 @@ function InterviewingCard({ job }: { job: Job }) {
         </div>
       )}
 
-      <div className="flex gap-2 mt-2.5 items-center">
+      <div className="flex gap-2 mt-3 items-center">
         {hasPrep && (
           <a
             href={job.notebookLMUrls}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-purple text-white px-3.5 py-1.5 rounded-md text-xs font-semibold no-underline cursor-pointer"
+            className="bg-purple text-white px-4 py-2 rounded-std text-xs font-bold no-underline cursor-pointer shadow-sm"
           >
-            Prep
+            Open Prep
           </a>
         )}
         {prepGenerating && (
           <div className="flex items-center gap-1.5">
-            <div className="spinner w-3 h-3 rounded-full border-2 border-purple border-t-transparent" />
+            <div className="spinner w-3.5 h-3.5 rounded-full border-2 border-purple/30 border-t-purple" />
             <span className="text-xs text-text-tertiary font-medium">
-              Prep materials generating
+              Generating prep materials
             </span>
           </div>
         )}
         {!hasPrep && !prepGenerating && (
-          <span className="text-xs text-text-tertiary">
-            Prep not started yet
+          <span className="text-xs text-text-tertiary font-medium">
+            Prep materials coming soon
           </span>
         )}
       </div>
@@ -354,10 +384,14 @@ export default function PipelineView({
   return (
     <div>
       {/* Pursuing */}
-      <div className="mb-7">
-        <SectionHead title="Pursuing" color="#1a1a1a" count={pursuing.length} />
+      <div className="pipeline-section pipeline-pursuing">
+        <SectionHead title="Pursuing" count={pursuing.length} colorClass="text-text-primary" />
         {pursuing.length === 0 ? (
-          <Empty msg="Bookmark jobs from Review to start building your pipeline." />
+          <Empty
+            msg="Bookmark jobs from Review to start building your pipeline."
+            subMsg="Jobs you're interested in will appear here."
+            icon={<BookmarkEmptyIcon />}
+          />
         ) : (
           pursuing.map((j) => (
             <PursuingCard
@@ -370,10 +404,14 @@ export default function PipelineView({
       </div>
 
       {/* Applied */}
-      <div className="mb-7">
-        <SectionHead title="Applied" color="#1d4ed8" count={applied.length} />
+      <div className="pipeline-section pipeline-applied">
+        <SectionHead title="Applied" count={applied.length} colorClass="text-blue" />
         {applied.length === 0 ? (
-          <Empty msg="No active applications yet. When you apply, they'll show up here." />
+          <Empty
+            msg="No active applications yet."
+            subMsg="When you apply, they'll show up here with follow-up reminders."
+            icon={<SendEmptyIcon />}
+          />
         ) : (
           applied.map((j) => (
             <AppliedCard key={j.id} job={j} onFollowUp={onFollowUp} />
@@ -382,14 +420,14 @@ export default function PipelineView({
       </div>
 
       {/* Interviewing */}
-      <div className="mb-7">
-        <SectionHead
-          title="Interviewing"
-          color="#5b21b6"
-          count={interviewing.length}
-        />
+      <div className="pipeline-section pipeline-interviewing">
+        <SectionHead title="Interviewing" count={interviewing.length} colorClass="text-purple" />
         {interviewing.length === 0 ? (
-          <Empty msg="No interviews scheduled. When it's time, you'll be ready." />
+          <Empty
+            msg="No interviews scheduled."
+            subMsg="When it's time, you'll be ready."
+            icon={<MicEmptyIcon />}
+          />
         ) : (
           interviewing.map((j) => (
             <InterviewingCard key={j.id} job={j} />

@@ -8,14 +8,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: "#f7f7f5",
+        bg: "#f5f3ef",
         surface: "#ffffff",
-        "surface-alt": "#f2f1ee",
-        border: "#e8e6e1",
-        "border-light": "#f0eeea",
+        "surface-alt": "#f9f7f4",
+        "surface-warm": "#faf8f5",
+        border: "#e5e0d8",
+        "border-light": "#eeebe5",
         "text-primary": "#1a1a1a",
-        "text-secondary": "#6b6b6b",
-        "text-tertiary": "#9a9a9a",
+        "text-secondary": "#555555",
+        "text-tertiary": "#8a8580",
         green: {
           DEFAULT: "#2d6a4f",
           light: "#edf5f0",
@@ -23,13 +24,17 @@ const config: Config = {
         },
         red: { DEFAULT: "#b91c1c" },
         purple: {
-          DEFAULT: "#5b21b6",
-          light: "#f3f0ff",
+          DEFAULT: "#6d28d9",
+          light: "#f5f3ff",
         },
-        blue: { DEFAULT: "#1d4ed8" },
+        blue: { DEFAULT: "#2563eb" },
         amber: {
-          DEFAULT: "#92400e",
+          DEFAULT: "#b45309",
           light: "#fffbeb",
+        },
+        teal: {
+          DEFAULT: "#1a4b58",
+          light: "#e8f4f7",
         },
       },
       fontFamily: {
@@ -37,11 +42,17 @@ const config: Config = {
         mono: ["JetBrains Mono", "SF Mono", "monospace"],
       },
       borderRadius: {
-        std: "8px",
-        card: "12px",
+        std: "10px",
+        card: "14px",
       },
       maxWidth: {
         app: "480px",
+      },
+      boxShadow: {
+        card: "0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.03)",
+        "card-hover": "0 2px 8px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
+        sheet: "0 -4px 24px rgba(0,0,0,0.12)",
+        nav: "0 -1px 8px rgba(0,0,0,0.06)",
       },
     },
   },

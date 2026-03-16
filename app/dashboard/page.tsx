@@ -52,6 +52,17 @@ interface ToastState {
   onUndo?: () => void;
 }
 
+// ── Empty state icon ──
+
+function InboxEmptyIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8a8580" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+      <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" />
+    </svg>
+  );
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -102,12 +113,10 @@ export default function DashboardPage() {
 
   const reviewJobs = [...active]
     .filter((j) => {
-      // Hide manual+bookmarked jobs from Review (they go straight to Pipeline)
       if (j.source === "Manual" && j.bookmarked && !j.applied) return false;
       return true;
     })
     .sort((a, b) => {
-      // Sort by best available score: totalScore if present, else matchScore (old blended)
       const aScore = a.totalScore ?? a.matchScore ?? 0;
       const bScore = b.totalScore ?? b.matchScore ?? 0;
       const scoreDiff = bScore - aScore;
@@ -124,7 +133,6 @@ export default function DashboardPage() {
     if (!job) return;
 
     const prev = job.bookmarked;
-    // Optimistic update
     setJobs((p) =>
       p.map((j) =>
         j.id === id
@@ -322,12 +330,12 @@ export default function DashboardPage() {
             alt=""
             className="w-20 h-20 rounded-2xl mb-5 pulse-gentle"
           />
-          <p className="text-white text-2xl font-semibold text-center">
+          <p className="text-white text-2xl font-bold text-center tracking-tight">
             Career Compass
           </p>
           <div className="loading-bar mt-6 mb-6" />
-          <p className="text-white text-sm italic opacity-80 max-w-[280px] text-center leading-relaxed">
-            {quote}
+          <p className="text-white/70 text-sm italic max-w-[280px] text-center leading-relaxed">
+            &ldquo;{quote}&rdquo;
           </p>
         </div>
       </div>
@@ -337,11 +345,11 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="max-w-app mx-auto px-4 pt-20 text-center">
-        <p className="text-sm text-red font-medium mb-2">Something went wrong</p>
+        <p className="text-sm text-red font-semibold mb-2">Something went wrong</p>
         <p className="text-xs text-text-tertiary mb-4">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="bg-text-primary text-white px-4 py-2 rounded-std text-sm font-semibold border-none cursor-pointer"
+          className="bg-teal text-white px-5 py-2.5 rounded-std text-sm font-bold border-none cursor-pointer"
         >
           Retry
         </button>
@@ -354,12 +362,12 @@ export default function DashboardPage() {
   const userName = session?.user?.name || "Will";
 
   return (
-    <div className="max-w-app mx-auto px-4 pb-20 bg-bg min-h-screen">
+    <div className="max-w-app mx-auto px-4 pb-24 bg-bg min-h-screen">
       {/* Review header */}
       {screen === "review" && (
         <div className="pt-5 pb-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-text-primary">Review</h1>
-          <span className="text-xs text-text-tertiary">
+          <h1 className="text-[22px] font-bold text-text-primary tracking-tight">Review</h1>
+          <span className="text-xs font-semibold text-text-tertiary bg-surface-alt px-2.5 py-1 rounded-full">
             {reviewJobs.length} {reviewJobs.length === 1 ? "job" : "jobs"}
           </span>
         </div>
@@ -368,10 +376,10 @@ export default function DashboardPage() {
       {/* Pipeline header */}
       {screen === "pipeline" && (
         <div className="pt-5 pb-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-text-primary">Pipeline</h1>
+          <h1 className="text-[22px] font-bold text-text-primary tracking-tight">Pipeline</h1>
           <button
             onClick={() => signOut()}
-            className="text-xs text-text-tertiary bg-transparent border-none cursor-pointer"
+            className="text-xs text-text-tertiary font-medium bg-transparent border-none cursor-pointer"
           >
             Sign out
           </button>
@@ -392,9 +400,17 @@ export default function DashboardPage() {
       {screen === "review" && (
         <>
           {reviewJobs.length === 0 ? (
-            <p className="text-sm text-text-secondary text-center py-6">
-              No new jobs to review. Check back tomorrow — the pipeline runs daily.
-            </p>
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <InboxEmptyIcon />
+              </div>
+              <p className="text-sm text-text-secondary font-medium">
+                No new jobs to review
+              </p>
+              <p className="text-xs text-text-tertiary mt-1">
+                Check back tomorrow — the pipeline runs daily.
+              </p>
+            </div>
           ) : (
             reviewJobs.map((j) => (
               <JobCard
