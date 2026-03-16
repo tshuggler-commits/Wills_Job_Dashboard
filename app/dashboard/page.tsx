@@ -112,7 +112,10 @@ export default function DashboardPage() {
 
   // ── Review screen data ──
 
-  const reviewJobs = [...active]
+  const REVIEW_PAGE_SIZE = 10;
+  const [reviewLimit, setReviewLimit] = useState(REVIEW_PAGE_SIZE);
+
+  const allReviewJobs = [...active]
     .filter((j) => {
       if (j.source === "Manual" && j.bookmarked && !j.applied) return false;
       return true;
@@ -125,8 +128,10 @@ export default function DashboardPage() {
       const aNew = a.status === "New" ? 0 : 1;
       const bNew = b.status === "New" ? 0 : 1;
       return aNew - bNew;
-    })
-    .slice(0, 10);
+    });
+
+  const reviewJobs = allReviewJobs.slice(0, reviewLimit);
+  const hasMoreReview = reviewLimit < allReviewJobs.length;
 
   // ── Handlers ──
 
@@ -370,7 +375,7 @@ export default function DashboardPage() {
         <div className="pt-5 pb-4 flex items-center justify-between">
           <h1 className="heading-serif text-[24px] text-text-primary">Review</h1>
           <span className="text-xs font-semibold text-text-tertiary bg-surface-alt px-2.5 py-1 rounded-full">
-            Top {reviewJobs.length}
+            Top {reviewJobs.length} of {allReviewJobs.length}
           </span>
         </div>
       )}
@@ -414,20 +419,30 @@ export default function DashboardPage() {
               </p>
             </div>
           ) : (
-            reviewJobs.map((j, i) => (
-              <div
-                key={j.id}
-                className="card-enter"
-                style={{ animationDelay: `${Math.min(i * 60, 300)}ms` }}
-              >
-                <JobCard
-                  job={j}
-                  onBookmark={handleBookmark}
-                  onDismiss={handleDismiss}
-                  onSaveNote={handleSaveNote}
-                />
-              </div>
-            ))
+            <>
+              {reviewJobs.map((j, i) => (
+                <div
+                  key={j.id}
+                  className="card-enter"
+                  style={{ animationDelay: `${Math.min(i * 60, 300)}ms` }}
+                >
+                  <JobCard
+                    job={j}
+                    onBookmark={handleBookmark}
+                    onDismiss={handleDismiss}
+                    onSaveNote={handleSaveNote}
+                  />
+                </div>
+              ))}
+              {hasMoreReview && (
+                <button
+                  onClick={() => setReviewLimit((prev) => prev + REVIEW_PAGE_SIZE)}
+                  className="w-full py-3.5 mt-1 mb-2 bg-surface border border-border rounded-card text-sm font-semibold text-text-secondary cursor-pointer transition-colors hover:bg-surface-warm"
+                >
+                  Show {Math.min(REVIEW_PAGE_SIZE, allReviewJobs.length - reviewLimit)} more roles
+                </button>
+              )}
+            </>
           )}
         </>
       )}
