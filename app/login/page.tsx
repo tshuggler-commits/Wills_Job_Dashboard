@@ -31,14 +31,29 @@ export default function LoginPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-      <div className="w-full max-w-[360px]">
-        <h1 className="text-xl font-bold text-text-primary mb-1">
-          Job Dashboard
-        </h1>
-        <p className="text-sm text-text-tertiary mb-8">Sign in to continue</p>
+  const inputClass =
+    "w-full px-4 h-12 text-sm border border-border rounded-std bg-surface text-text-primary outline-none focus:border-text-primary transition-colors";
 
+  return (
+    <div className="min-h-screen login-gradient flex flex-col items-center justify-center px-4">
+      {/* Branding */}
+      <div className="flex flex-col items-center mb-8">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/icons/icon-192x192.png"
+          alt=""
+          className="w-20 h-20 rounded-2xl"
+        />
+        <h1 className="text-[28px] font-bold text-white mt-4">
+          Career Compass
+        </h1>
+        <p className="text-sm text-white/70 mt-1">
+          Will&apos;s Job Search Dashboard
+        </p>
+      </div>
+
+      {/* Login card */}
+      <div className="w-full max-w-[360px] bg-white rounded-2xl p-8 shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">
@@ -50,7 +65,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full px-3 py-3 text-sm border border-border rounded-std bg-surface text-text-primary outline-none focus:border-text-primary transition-colors"
+              className={inputClass}
             />
           </div>
 
@@ -64,7 +79,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              className="w-full px-3 py-3 text-sm border border-border rounded-std bg-surface text-text-primary outline-none focus:border-text-primary transition-colors"
+              className={inputClass}
             />
           </div>
 
@@ -75,12 +90,17 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-text-primary text-white font-semibold text-sm rounded-std hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="w-full h-12 bg-green text-white font-semibold text-sm rounded-std hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </div>
+
+      {/* Footer */}
+      <p className="text-white/40 text-xs mt-8">
+        Built with care by Tanya
+      </p>
     </div>
   );
 }

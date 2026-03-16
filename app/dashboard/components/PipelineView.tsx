@@ -37,7 +37,7 @@ function SectionHead({
 
 function Empty({ msg }: { msg: string }) {
   return (
-    <div className="p-4 text-[13px] text-text-tertiary bg-surface-alt rounded-std border border-border">
+    <div className="text-sm text-text-secondary text-center py-6">
       {msg}
     </div>
   );
@@ -357,7 +357,7 @@ export default function PipelineView({
       <div className="mb-7">
         <SectionHead title="Pursuing" color="#1a1a1a" count={pursuing.length} />
         {pursuing.length === 0 ? (
-          <Empty msg="Bookmark jobs from the Review tab to start your shortlist." />
+          <Empty msg="Bookmark jobs from Review to start building your pipeline." />
         ) : (
           pursuing.map((j) => (
             <PursuingCard
@@ -373,7 +373,7 @@ export default function PipelineView({
       <div className="mb-7">
         <SectionHead title="Applied" color="#1d4ed8" count={applied.length} />
         {applied.length === 0 ? (
-          <Empty msg="No applications out yet." />
+          <Empty msg="No active applications yet. When you apply, they'll show up here." />
         ) : (
           applied.map((j) => (
             <AppliedCard key={j.id} job={j} onFollowUp={onFollowUp} />
@@ -389,7 +389,7 @@ export default function PipelineView({
           count={interviewing.length}
         />
         {interviewing.length === 0 ? (
-          <Empty msg="No active interviews." />
+          <Empty msg="No interviews scheduled. When it's time, you'll be ready." />
         ) : (
           interviewing.map((j) => (
             <InterviewingCard key={j.id} job={j} />

@@ -155,10 +155,11 @@ export async function getActiveJobs(): Promise<Job[]> {
     cursor = response.has_more ? response.next_cursor : undefined;
   } while (cursor);
 
-  // Post-filter: exclude On-site (safety net)
+  // Post-filter: exclude On-site and unscored jobs (no Total Score from new pipeline)
   return pages
     .map(pageToJob)
-    .filter((j) => j.workType !== "On-site");
+    .filter((j) => j.workType !== "On-site")
+    .filter((j) => j.totalScore != null && j.totalScore > 0);
 }
 
 // ── Write helpers ──

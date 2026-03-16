@@ -292,19 +292,34 @@ export default function DashboardPage() {
   // ── Loading state ──
 
   if (loading) {
+    const quotes = [
+      "Every expert was once a beginner.",
+      "The best way to predict the future is to create it.",
+      "Opportunities don't happen. You create them.",
+      "Success is where preparation meets opportunity.",
+      "Your next chapter is waiting.",
+      "Small steps every day lead to big results.",
+      "The right role is out there. Let's find it.",
+      "Consistency beats intensity.",
+    ];
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+
     return (
-      <div className="max-w-app mx-auto px-4 min-h-screen flex flex-col items-center justify-center">
-        <div className="fade-in">
+      <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center loading-gradient">
+        <div className="fade-in flex flex-col items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/icons/icon-192x192.png"
             alt=""
-            className="w-16 h-16 mx-auto mb-4 rounded-2xl"
+            className="w-20 h-20 rounded-2xl mb-5 pulse-gentle"
           />
-          <p className="text-lg font-semibold text-text-primary text-center">
+          <p className="text-white text-2xl font-semibold text-center">
             Career Compass
           </p>
-          <div className="spinner w-5 h-5 rounded-full border-2 border-text-tertiary border-t-transparent mx-auto mt-4" />
+          <div className="loading-bar mt-6 mb-6" />
+          <p className="text-white text-sm italic opacity-80 max-w-[280px] text-center leading-relaxed">
+            {quote}
+          </p>
         </div>
       </div>
     );
@@ -331,18 +346,6 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-app mx-auto px-4 pb-20 bg-bg min-h-screen">
-      {/* Sign out - top right corner */}
-      {screen === "today" && (
-        <div className="flex justify-end pt-2">
-          <button
-            onClick={() => signOut()}
-            className="text-xs text-text-tertiary bg-transparent border-none cursor-pointer"
-          >
-            Sign out
-          </button>
-        </div>
-      )}
-
       {/* Review header */}
       {screen === "review" && (
         <div className="pt-5 pb-4 flex items-center justify-between">
@@ -355,8 +358,14 @@ export default function DashboardPage() {
 
       {/* Pipeline header */}
       {screen === "pipeline" && (
-        <div className="pt-5 pb-4">
+        <div className="pt-5 pb-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-text-primary">Pipeline</h1>
+          <button
+            onClick={() => signOut()}
+            className="text-xs text-text-tertiary bg-transparent border-none cursor-pointer"
+          >
+            Sign out
+          </button>
         </div>
       )}
 
@@ -374,9 +383,9 @@ export default function DashboardPage() {
       {screen === "review" && (
         <>
           {reviewJobs.length === 0 ? (
-            <div className="p-6 text-center text-sm text-text-tertiary bg-surface-alt rounded-std border border-border">
-              No new jobs to review. Check back tomorrow.
-            </div>
+            <p className="text-sm text-text-secondary text-center py-6">
+              No new jobs to review. Check back tomorrow — the pipeline runs daily.
+            </p>
           ) : (
             reviewJobs.map((j) => (
               <JobCard

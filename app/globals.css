@@ -78,3 +78,56 @@ button:active {
 .fade-in {
   animation: fadeIn 0.4s ease-out;
 }
+
+/* Branded loading screen */
+.loading-gradient {
+  background: linear-gradient(135deg, #1a4b58, #0f2d3a);
+}
+
+@keyframes pulseGentle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.03); }
+}
+
+.pulse-gentle {
+  animation: pulseGentle 2s ease-in-out infinite;
+}
+
+@keyframes loadingSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.loading-bar {
+  width: 120px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
+  animation: loadingSlide 1.2s ease-in-out infinite;
+}
+
+/* Today screen gradient header */
+.today-header {
+  background: linear-gradient(135deg, #1a4b58, #2d6a4f);
+  border-radius: 0 0 16px 16px;
+  margin: 0 -16px;
+  padding: 32px 28px 24px;
+}
+
+/* Login screen gradient */
+.login-gradient {
+  background: linear-gradient(135deg, #1a4b58, #0f2d3a);
+}

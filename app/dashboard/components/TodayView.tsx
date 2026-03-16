@@ -231,15 +231,11 @@ export default function TodayView({
 
   return (
     <div>
-      {/* Greeting */}
-      <div className="pt-5 pb-4">
-        <h1 className="text-xl font-bold text-text-primary">Hey, {userName}</h1>
-        <p className="text-[13px] text-text-tertiary mt-0.5">{todayFormatted()}</p>
-      </div>
-
-      {/* Contextual message */}
-      <div className="bg-surface rounded-card border border-border p-4 mb-4">
-        <p className="text-[14px] text-text-primary leading-relaxed">
+      {/* Gradient header with greeting + coaching message */}
+      <div className="today-header mb-4">
+        <h1 className="text-xl font-bold text-white">Hey, {userName}</h1>
+        <p className="text-[13px] text-white/60 mt-0.5">{todayFormatted()}</p>
+        <p className="text-[14px] text-white/90 leading-relaxed mt-3">
           {contextualMessage}
         </p>
       </div>
@@ -248,12 +244,16 @@ export default function TodayView({
       <MondayBanner jobs={active} />
 
       {/* Needs Attention */}
-      {attentionJobs.length > 0 && (
-        <div className="mb-4">
-          <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-2 px-0.5">
-            Needs attention
-          </div>
-          {attentionJobs.map((j) => (
+      <div className="mb-4">
+        <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-2 px-0.5">
+          Needs attention
+        </div>
+        {attentionJobs.length === 0 ? (
+          <p className="text-sm text-text-secondary text-center py-6">
+            Nothing urgent today. You&apos;re on track.
+          </p>
+        ) : (
+          attentionJobs.map((j) => (
             <div
               key={j.id + "-attn"}
               className={`rounded-std p-3 mb-1.5 flex items-center justify-between ${
@@ -282,17 +282,21 @@ export default function TodayView({
                 </button>
               )}
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
       {/* Resume Reviews */}
-      {resumeReviews.length > 0 && (
-        <div className="mb-4">
-          <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-2 px-0.5">
-            Resume reviews
-          </div>
-          {resumeReviews.map((j) => (
+      <div className="mb-4">
+        <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wide mb-2 px-0.5">
+          Resume reviews
+        </div>
+        {resumeReviews.length === 0 ? (
+          <p className="text-sm text-text-secondary text-center py-6">
+            No resumes waiting. The system will notify you when one is ready.
+          </p>
+        ) : (
+          resumeReviews.map((j) => (
             <div key={j.id + "-resume"} className="mb-2">
               <div className="text-[13px] font-semibold text-text-primary mb-1.5 px-0.5">
                 {j.company} · {j.jobTitle}
@@ -304,9 +308,9 @@ export default function TodayView({
                 onApprove={() => onApproveResume(j.id)}
               />
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
       {/* Stats Row */}
       <div className="mb-3">
